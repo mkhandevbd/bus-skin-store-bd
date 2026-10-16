@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bus Skin Store BD – বাস স্কিন, মড ও ম্যাপ ডাউনলোড</title>
+<meta name="description" content="বাস সিমুলেটর ইন্দোনেশিয়া (BUSSID) সহ সিমুলেটর গেমের বাস স্কিন, মড ও ম্যাপ ফ্রি ডাউনলোড করুন।">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f3f6;--card:#fff;--text:#14181f;--muted:#5b6574;--line:#dfe3ea;--g:#0a7d5a;--gtext:#fff;--y:#ffc233;--chip:#e6eaf0;--sh:rgba(255,255,255,.6)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1218;--card:#171c25;--text:#eef1f6;--muted:#9aa4b4;--line:#262d3a;--g:#18b784;--gtext:#04120d;--chip:#212835;--sh:rgba(255,255,255,.12)}}
+:root[data-theme="dark"]{--bg:#0e1218;--card:#171c25;--text:#eef1f6;--muted:#9aa4b4;--line:#262d3a;--g:#18b784;--gtext:#04120d;--chip:#212835;--sh:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Hind Siliguri",system-ui,"Segoe UI",sans-serif;line-height:1.5}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--g);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:10px;padding:10px 0}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:20px;white-space:nowrap}
+.logo svg{width:34px;height:18px;--b:var(--g);--s:var(--y)}
+.search{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 14px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn.p{background:var(--g);color:var(--gtext);border-color:var(--g)}
+@media(max-width:640px){.logo span{display:none}}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center;padding:30px 0 4px}
+@media(max-width:760px){.hero{grid-template-columns:1fr;padding-top:20px}}
+h1{font-size:clamp(26px,5vw,42px);line-height:1.25;margin:0 0 10px}
+.sub{color:var(--muted);margin:0;max-width:46ch}
+.road{position:relative;padding-bottom:18px}
+.road svg{width:100%;max-width:340px;display:block;margin:0 auto;--b:var(--g);--s:var(--y)}
+.road::after{content:"";position:absolute;left:0;right:0;bottom:4px;border-top:4px dashed var(--y)}
+.games,.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.games{margin:20px 0 12px}
+.chip{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--chip);border-radius:999px;padding:6px 14px;cursor:pointer;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--g);color:var(--gtext);border-color:var(--g);font-weight:700}
+.chip img,.tab img{width:20px;height:20px;border-radius:50%;object-fit:cover}
+.tabs{border-bottom:1px solid var(--line);margin-bottom:6px}
+.tab{display:flex;align-items:center;gap:6px;background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;cursor:pointer;font-weight:600;color:var(--muted)}
+.tab[aria-selected="true"]{color:var(--text);border-bottom-color:var(--y)}
+section{margin:24px 0}
+h2{font-size:22px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.th{height:120px;display:grid;place-items:center;background:linear-gradient(160deg,color-mix(in srgb,var(--g) 30%,var(--card)),var(--card));overflow:hidden}
+.th svg{width:70%;height:auto;--b:var(--g);--s:var(--y)}
+.th img{width:100%;height:100%;object-fit:cover}
+.body{padding:12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.t{font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:var(--muted);font-size:14px}
+.dl{color:var(--muted);font-size:13px}
+.acts{margin-top:auto;padding-top:6px}
+.acts .btn{width:100%;padding:6px 8px;font-size:14px}
+.badge{position:relative;overflow:hidden;font-size:11px;font-weight:700;border-radius:6px;padding:0 6px;line-height:18px;color:#fff}
+.owner{background:#d92d3f}.moderator{background:#2563eb}.premium{background:#b7791f}.vip{background:#7c3aed}
+.sk,.premium,.vip{position:relative;overflow:hidden}
+.sk{background:var(--chip);border-radius:6px}
+.sk::after,.premium::after,.vip::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,var(--sh),transparent);animation:sh 1.5s infinite}
+.premium::after,.vip::after{animation-duration:2.6s;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent)}
+@keyframes sh{to{transform:translateX(100%)}}
+.th.sk{border-radius:0;height:120px;width:100%}
+.l1{height:16px;width:80%}.l2{height:12px;width:50%}.l3{height:30px;width:100%;margin-top:8px}
+.empty{padding:34px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;margin-top:20px}
+footer{border-top:1px solid var(--line);margin-top:36px;padding:20px 0;color:var(--muted);font-size:14px}
+@media (prefers-reduced-motion:reduce){.sk::after,.premium::after,.vip::after{animation:none}}
+[hidden]{display:none!important}
+.me{display:flex;align-items:center;gap:8px}
+.me img{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.me .n{font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:640px){.me .n{display:none}#theme{padding:7px 10px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="bus" viewBox="0 0 120 56"><rect x="4" y="6" width="112" height="38" rx="7" fill="var(--b)"/><rect x="4" y="30" width="112" height="7" fill="var(--s)"/><g fill="#dff3ff" opacity=".92"><rect x="12" y="12" width="16" height="14" rx="2"/><rect x="32" y="12" width="16" height="14" rx="2"/><rect x="52" y="12" width="16" height="14" rx="2"/><rect x="72" y="12" width="16" height="14" rx="2"/><rect x="94" y="12" width="16" height="20" rx="2"/></g><circle cx="30" cy="46" r="7" fill="#1a1d24"/><circle cx="92" cy="46" r="7" fill="#1a1d24"/><circle cx="30" cy="46" r="3" fill="#9aa4b4"/><circle cx="92" cy="46" r="3" fill="#9aa4b4"/></symbol></svg>
+
+<header><div class="wrap bar">
+  <div class="logo"><svg><use href="#bus"/></svg><span>Bus Skin Store BD</span></div>
+  <input class="search" id="q" type="search" placeholder="মড, স্কিন বা ম্যাপ খুঁজুন" aria-label="সার্চ">
+  <button class="btn" id="theme" aria-label="থিম বদলান">🌓 থিম</button>
+  <button class="btn p" id="login">গুগল দিয়ে লগইন</button>
+  <div class="me" id="me" hidden></div>
+</div></header>
+
+<main class="wrap">
+  <div class="hero">
+    <div>
+      <h1>বাস স্কিন, মড আর ম্যাপ এক জায়গায়</h1>
+      <p class="sub">বাস সিমুলেটর ইন্দোনেশিয়া ও অন্য সিমুলেটর গেমের মড সরাসরি ডাউনলোড করুন।</p>
+    </div>
+    <div class="road"><svg viewBox="0 0 120 56" role="img" aria-label="বাসের ছবি"><use href="#bus"/></svg></div>
+  </div>
+  <div class="games" id="games" role="group" aria-label="গেম বাছাই"></div>
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div id="out"></div>
+</main>
+
+<footer><div class="wrap">© Bus Skin Store BD</div></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+var $=function(i){return document.getElementById(i)},
+esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
+S={games:[],cats:[],mods:[],g:null,t:"all",q:""},
+BADGE={owner:"Owner",moderator:"Moderator",premium:"Premium",vip:"VIP"},db;
+
+function skel(){
+ var c='<div class="card"><div class="th sk"></div><div class="body"><div class="sk l1"></div><div class="sk l2"></div><div class="sk l3"></div></div></div>';
+ $("out").innerHTML='<section><div class="sk l1" style="height:24px;width:200px;margin-bottom:12px"></div><div class="grid">'+c+c+c+c+'</div></section>';
+}
+function fail(m){$("out").innerHTML='<div class="empty">'+esc(m)+'</div>'}
+function img(u,n){return u?'<img src="'+esc(u)+'" alt="'+esc(n)+'">':''}
+function card(m){
+ var u=m.uploader||{},b=BADGE[u.role]?'<span class="badge '+esc(u.role)+'">'+BADGE[u.role]+'</span>':'';
+ var th=m.cover_url?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="'+esc(m.title)+'">':'<svg><use href="#bus"/></svg>';
+ return '<article class="card"><div class="th">'+th+'</div><div class="body"><div class="t">'+esc(m.title)+'</div><div class="meta">'+esc(u.display_name||"অজানা")+' '+b+'</div><div class="dl">'+(m.downloads||0)+' ডাউনলোড</div><div class="acts"><button class="btn p">ডাউনলোড</button></div></div></article>';
+}
+function sec(c){
+ var q=S.q.toLowerCase(),L=S.mods.filter(function(m){return m.category_id==c.id&&m.title.toLowerCase().indexOf(q)>-1});
+ if(!L.length)return"";
+ if(S.t=="all")L=L.slice(0,6);
+ return '<section><h2>'+(S.t=="all"?"জনপ্রিয় ":"")+esc(c.name)+'</h2><div class="grid">'+L.map(card).join("")+'</div></section>';
+}
+function draw(){
+ $("games").innerHTML=S.games.map(function(g){return '<button class="chip" aria-pressed="'+(g.id==S.g)+'" data-g="'+g.id+'">'+img(g.image_url,g.name)+esc(g.name)+'</button>'}).join("");
+ $("tabs").innerHTML='<button class="tab" role="tab" aria-selected="'+(S.t=="all")+'" data-t="all">সব</button>'+S.cats.map(function(c){return '<button class="tab" role="tab" aria-selected="'+(S.t==c.id)+'" data-t="'+c.id+'">'+img(c.image_url,c.name)+esc(c.name)+'</button>'}).join("");
+ var h="";S.cats.forEach(function(c){if(S.t=="all"||S.t==c.id)h+=sec(c)});
+ $("out").innerHTML=h||'<div class="empty">'+(S.q?"কিছু পাওয়া যায়নি। অন্য শব্দে খুঁজুন।":"এখনো কোনো মড যোগ হয়নি, শীঘ্রই আসছে।")+'</div>';
+}
+async function showMe(sess){
+ var l=$("login"),m=$("me");
+ if(!sess){l.hidden=false;m.hidden=true;return}
+ var r=await db.from("profiles").select("display_name,avatar_url,role").eq("id",sess.user.id).single();
+ var p=r.data||{display_name:"ইউজার",role:"user"};
+ var b=BADGE[p.role]?'<span class="badge '+esc(p.role)+'">'+BADGE[p.role]+'</span>':'';
+ m.innerHTML=(p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'')+'<span class="n">'+esc(p.display_name)+'</span>'+b+'<button class="btn" id="logout">লগআউট</button>';
+ l.hidden=true;m.hidden=false;
+ $("logout").onclick=function(){db.auth.signOut()};
+}
+function initAuth(){
+ $("login").onclick=function(){db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin}})};
+ db.auth.onAuthStateChange(function(ev,sess){setTimeout(function(){showMe(sess)},0)});
+}
+async function loadGame(){
+ skel();
+ var r=await Promise.all([
+  db.from("categories").select("id,name,image_url").eq("game_id",S.g).order("sort_order"),
+  db.from("mods").select("id,title,cover_url,downloads,category_id,uploader:profiles!uploader_id(display_name,role)").eq("game_id",S.g).eq("status","approved").order("downloads",{ascending:false}).limit(200)
+ ]);
+ if(r[0].error||r[1].error){fail("ডেটা লোড করা যায়নি। config.js-এ Supabase URL ও কী ঠিক আছে কিনা দেখুন।");return}
+ S.cats=r[0].data;S.mods=r[1].data;S.t="all";draw();
+}
+async function boot(){
+ if(typeof SUPABASE_URL=="undefined"||SUPABASE_URL.indexOf("supabase.co")<0){fail("config.js ফাইলে আপনার Supabase URL ও কী বসাতে হবে।");return}
+ db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ initAuth();
+ skel();
+ var r=await db.from("games").select("id,name,image_url").eq("active",true).order("sort_order");
+ if(r.error){fail("ডেটা লোড করা যায়নি। config.js-এ Supabase URL ও কী ঠিক আছে কিনা দেখুন।");return}
+ S.games=r.data;
+ if(!S.games.length){fail("এখনো কোনো গেম যোগ হয়নি।");return}
+ S.g=S.games[0].id;await loadGame();
+}
+document.addEventListener("click",function(e){
+ var a=e.target.closest("[data-g]"),b=e.target.closest("[data-t]");
+ if(a&&a.dataset.g!=S.g){S.g=+a.dataset.g;S.q="";$("q").value="";loadGame()}
+ if(b){S.t=b.dataset.t=="all"?"all":+b.dataset.t;draw()}
+});
+$("q").addEventListener("input",function(e){S.q=e.target.value;if(S.cats.length)draw()});
+var R=document.documentElement;
+try{var s=localStorage.getItem("t");if(s)R.dataset.theme=s}catch(e){}
+$("theme").addEventListener("click",function(){
+ var cur=R.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),n=cur=="dark"?"light":"dark";
+ R.dataset.theme=n;try{localStorage.setItem("t",n)}catch(e){}
+});
+boot();
+</script>
+</body>
+</html>
