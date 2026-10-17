@@ -70,6 +70,20 @@ footer{border-top:1px solid var(--line);margin-top:36px;padding:20px 0;color:var
 .me img{width:32px;height:32px;border-radius:50%;object-fit:cover}
 .me .n{font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:640px){.me .n{display:none}#theme{padding:7px 10px}}
+h1 em{font-style:normal;color:var(--g)}
+.strip{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.strip div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 16px;min-width:84px}
+.strip b{display:block;font-size:22px;line-height:1.2}.strip span{font-size:13px;color:var(--muted)}
+.tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tab{white-space:nowrap}
+.th{position:relative}
+.tag{position:absolute;top:8px;left:8px;background:#e8590c;color:#fff;font-size:12px;font-weight:700;padding:0 8px;line-height:20px;border-radius:6px;z-index:1}
+.cat{font-size:12px;font-weight:700;color:var(--g)}
+.card{transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.sort{display:flex;gap:6px;justify-content:flex-end;margin-top:12px}
+.sort .chip{padding:3px 12px;font-size:14px}
+@media(max-width:640px){.bar{flex-wrap:wrap}.search{order:5;flex-basis:100%}.grid{grid-template-columns:repeat(2,1fr);gap:10px}.th{height:100px}}
+@media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
 </style>
 </head>
 <body>
@@ -86,8 +100,9 @@ footer{border-top:1px solid var(--line);margin-top:36px;padding:20px 0;color:var
 <main class="wrap">
   <div class="hero">
     <div>
-      <h1>বাস স্কিন, মড আর ম্যাপ এক জায়গায়</h1>
+      <h1>বাস স্কিন, মড আর ম্যাপ <em>এক জায়গায়</em></h1>
       <p class="sub">বাস সিমুলেটর ইন্দোনেশিয়া ও অন্য সিমুলেটর গেমের মড সরাসরি ডাউনলোড করুন।</p>
+      <div class="strip" id="strip"></div>
     </div>
     <div class="road"><svg viewBox="0 0 120 56" role="img" aria-label="বাসের ছবি"><use href="#bus"/></svg></div>
   </div>
@@ -103,7 +118,7 @@ footer{border-top:1px solid var(--line);margin-top:36px;padding:20px 0;color:var
 <script>
 var $=function(i){return document.getElementById(i)},
 esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
-S={games:[],cats:[],mods:[],g:null,t:"all",q:""},
+S={games:[],cats:[],mods:[],g:null,t:"all",q:"",sort:"pop"},
 BADGE={owner:"Owner",moderator:"Moderator",premium:"Premium",vip:"VIP"},db;
 
 function skel(){
@@ -112,21 +127,31 @@ function skel(){
 }
 function fail(m){$("out").innerHTML='<div class="empty">'+esc(m)+'</div>'}
 function img(u,n){return u?'<img src="'+esc(u)+'" alt="'+esc(n)+'">':''}
+function isNew(m){return m.created_at&&Date.now()-new Date(m.created_at).getTime()<6048e5}
+function fmt(n){n=n||0;return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":String(n)}
+function byNew(a,b){return new Date(b.created_at)-new Date(a.created_at)}
 function card(m){
- var u=m.uploader||{},b=BADGE[u.role]?'<span class="badge '+esc(u.role)+'">'+BADGE[u.role]+'</span>':'';
- var th=m.cover_url?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="'+esc(m.title)+'">':'<svg><use href="#bus"/></svg>';
- return '<article class="card"><div class="th">'+th+'</div><div class="body"><div class="t">'+esc(m.title)+'</div><div class="meta">'+esc(u.display_name||"অজানা")+' '+b+'</div><div class="dl">'+(m.downloads||0)+' ডাউনলোড</div><div class="acts"><button class="btn p">ডাউনলোড</button></div></div></article>';
+ var u=m.uploader||{},b=BADGE[u.role]?'<span class="badge '+esc(u.role)+'">'+BADGE[u.role]+'</span>':'',
+ c=S.cats.find(function(x){return x.id==m.category_id}),
+ th=m.cover_url?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="'+esc(m.title)+'">':'<svg><use href="#bus"/></svg>';
+ return '<article class="card"><div class="th">'+(isNew(m)?'<span class="tag">নতুন</span>':'')+th+'</div><div class="body"><div class="cat">'+esc(c?c.name:"")+'</div><div class="t">'+esc(m.title)+'</div><div class="meta">'+esc(u.display_name||"অজানা")+' '+b+'</div><div class="dl">⬇ '+fmt(m.downloads)+' ডাউনলোড</div><div class="acts"><button class="btn p">ডাউনলোড</button></div></div></article>';
 }
+function row(title,L){return '<section><h2>'+title+'</h2><div class="grid">'+L.map(card).join("")+'</div></section>'}
 function sec(c){
  var q=S.q.toLowerCase(),L=S.mods.filter(function(m){return m.category_id==c.id&&m.title.toLowerCase().indexOf(q)>-1});
  if(!L.length)return"";
- if(S.t=="all")L=L.slice(0,6);
- return '<section><h2>'+(S.t=="all"?"জনপ্রিয় ":"")+esc(c.name)+'</h2><div class="grid">'+L.map(card).join("")+'</div></section>';
+ if(S.t=="all")L=L.slice(0,6);else if(S.sort=="new")L=L.slice().sort(byNew);
+ return row((S.t=="all"?"জনপ্রিয় ":"")+esc(c.name),L);
 }
 function draw(){
  $("games").innerHTML=S.games.map(function(g){return '<button class="chip" aria-pressed="'+(g.id==S.g)+'" data-g="'+g.id+'">'+img(g.image_url,g.name)+esc(g.name)+'</button>'}).join("");
  $("tabs").innerHTML='<button class="tab" role="tab" aria-selected="'+(S.t=="all")+'" data-t="all">সব</button>'+S.cats.map(function(c){return '<button class="tab" role="tab" aria-selected="'+(S.t==c.id)+'" data-t="'+c.id+'">'+img(c.image_url,c.name)+esc(c.name)+'</button>'}).join("");
- var h="";S.cats.forEach(function(c){if(S.t=="all"||S.t==c.id)h+=sec(c)});
+ var tot=S.mods.reduce(function(a,m){return a+(m.downloads||0)},0);
+ $("strip").innerHTML='<div><b>'+S.mods.length+'</b><span>মড</span></div><div><b>'+fmt(tot)+'</b><span>ডাউনলোড</span></div><div><b>'+S.cats.length+'</b><span>ক্যাটাগরি</span></div>';
+ var h="";
+ if(S.t=="all"&&!S.q){var nw=S.mods.slice().sort(byNew).slice(0,6);if(nw.length)h+=row("নতুন যোগ হয়েছে",nw)}
+ else if(S.t!="all"&&S.mods.length)h+='<div class="sort"><button class="chip" aria-pressed="'+(S.sort=="pop")+'" data-s="pop">জনপ্রিয়</button><button class="chip" aria-pressed="'+(S.sort=="new")+'" data-s="new">নতুন</button></div>';
+ S.cats.forEach(function(c){if(S.t=="all"||S.t==c.id)h+=sec(c)});
  $("out").innerHTML=h||'<div class="empty">'+(S.q?"কিছু পাওয়া যায়নি। অন্য শব্দে খুঁজুন।":"এখনো কোনো মড যোগ হয়নি, শীঘ্রই আসছে।")+'</div>';
 }
 async function showMe(sess){
@@ -147,7 +172,7 @@ async function loadGame(){
  skel();
  var r=await Promise.all([
   db.from("categories").select("id,name,image_url").eq("game_id",S.g).order("sort_order"),
-  db.from("mods").select("id,title,cover_url,downloads,category_id,uploader:profiles!uploader_id(display_name,role)").eq("game_id",S.g).eq("status","approved").order("downloads",{ascending:false}).limit(200)
+  db.from("mods").select("id,title,cover_url,downloads,created_at,category_id,uploader:profiles!uploader_id(display_name,role)").eq("game_id",S.g).eq("status","approved").order("downloads",{ascending:false}).limit(200)
  ]);
  if(r[0].error||r[1].error){fail("ডেটা লোড করা যায়নি। config.js-এ Supabase URL ও কী ঠিক আছে কিনা দেখুন।");return}
  S.cats=r[0].data;S.mods=r[1].data;S.t="all";draw();
@@ -167,6 +192,7 @@ document.addEventListener("click",function(e){
  var a=e.target.closest("[data-g]"),b=e.target.closest("[data-t]");
  if(a&&a.dataset.g!=S.g){S.g=+a.dataset.g;S.q="";$("q").value="";loadGame()}
  if(b){S.t=b.dataset.t=="all"?"all":+b.dataset.t;draw()}
+ var so=e.target.closest("[data-s]");if(so){S.sort=so.dataset.s;draw()}
 });
 $("q").addEventListener("input",function(e){S.q=e.target.value;if(S.cats.length)draw()});
 var R=document.documentElement;
