@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>মড – Bus Skin Store BD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f3f6;--card:#fff;--text:#14181f;--muted:#5b6574;--line:#dfe3ea;--g:#0a7d5a;--gtext:#fff;--y:#ffc233;--chip:#e6eaf0;--sh:rgba(255,255,255,.6)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1218;--card:#171c25;--text:#eef1f6;--muted:#9aa4b4;--line:#262d3a;--g:#18b784;--gtext:#04120d;--chip:#212835;--sh:rgba(255,255,255,.12)}}
+:root[data-theme="dark"]{--bg:#0e1218;--card:#171c25;--text:#eef1f6;--muted:#9aa4b4;--line:#262d3a;--g:#18b784;--gtext:#04120d;--chip:#212835;--sh:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Hind Siliguri",system-ui,"Segoe UI",sans-serif;line-height:1.55}
+button,input{font:inherit;color:inherit}
+a{color:var(--g)}
+:focus-visible{outline:2px solid var(--g);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:10px;padding:10px 0}
+.logo{flex:1;display:flex;align-items:center;gap:8px;font-weight:700;font-size:20px;text-decoration:none;color:var(--text)}
+.logo svg{width:34px;height:18px;--b:var(--g);--s:var(--y)}
+.rgb{background:linear-gradient(90deg,#ff2d55,#ff9500,#ffd60a,#30d158,#0a84ff,#bf5af2,#ff2d55);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:rgb 6s linear infinite}
+@keyframes rgb{to{background-position:300% 0}}
+.btn{position:relative;overflow:hidden;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 14px;cursor:pointer;font-weight:600;white-space:nowrap;text-decoration:none;color:var(--text);display:inline-block}
+.btn.p{background:var(--g);color:var(--gtext);border-color:var(--g)}
+.btn.p::after{content:"";position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent)}
+.btn.p:hover::after{transform:translateX(120%);transition:transform .6s}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.me{display:flex;align-items:center;gap:8px}.me img{width:30px;height:30px;border-radius:50%}
+.badge{position:relative;overflow:hidden;font-size:11px;font-weight:700;border-radius:6px;padding:0 6px;line-height:18px;color:#fff;vertical-align:middle}
+.owner{background:#d92d3f;box-shadow:0 0 8px rgba(217,45,63,.7)}.moderator{background:#2563eb;box-shadow:0 0 8px rgba(37,99,235,.6)}.premium{background:#b7791f;box-shadow:0 0 8px rgba(183,121,31,.7)}.vip{background:#7c3aed;box-shadow:0 0 8px rgba(124,58,237,.7)}
+.badge::after,.sk::after,.gv::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,var(--sh),transparent);animation:sh 2.4s infinite}
+.badge::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)}
+@keyframes sh{to{transform:translateX(100%)}}
+.sk{position:relative;overflow:hidden;background:var(--chip);border-radius:10px}
+.crumb{margin:16px 0 12px;color:var(--muted);font-size:14px}.crumb a{color:var(--muted)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;grid-template-areas:"hero side" "rest side";gap:18px;align-items:start;animation:fi .45s both}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}}
+.hero{grid-area:hero}.rest{grid-area:rest}.side{grid-area:side;position:sticky;top:76px;display:grid;gap:14px}
+@media(max-width:860px){.layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"hero" "side" "rest"}.side{position:static}}
+.big{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,color-mix(in srgb,var(--g) 30%,var(--card)),var(--card));display:grid;place-items:center;border:1px solid var(--line)}
+.big img{width:100%;height:100%;object-fit:cover}
+.big svg{width:50%;--b:var(--g);--s:var(--y)}
+.tag{position:absolute;top:10px;left:10px;background:#e8590c;color:#fff;font-size:12px;font-weight:700;padding:0 8px;line-height:22px;border-radius:6px}
+.tw{display:flex;align-items:center;gap:6px;margin-top:10px}
+.arr{flex:0 0 auto;width:30px;height:56px;border:1px solid var(--line);background:var(--card);border-radius:8px;cursor:pointer;font-size:20px}
+.thumbs{flex:1;min-width:0;display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.thumbs::-webkit-scrollbar{display:none}
+.thumbs button{flex:0 0 88px;height:56px;border-radius:8px;overflow:hidden;border:2px solid transparent;scroll-snap-align:start;padding:0;background:var(--chip);cursor:pointer;opacity:.8}
+.thumbs button[aria-current="true"]{border-color:var(--y);opacity:1}
+.thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+h1{font-size:clamp(24px,4vw,34px);line-height:1.25;margin:16px 0 8px;overflow-wrap:anywhere}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.c{background:var(--chip);border-radius:999px;padding:2px 12px;font-size:14px;font-weight:600}
+.gv{position:relative;overflow:hidden;background:linear-gradient(90deg,#0a7d5a,#0a84ff);color:#fff}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.box h2,.box h3{margin:0 0 10px;font-size:18px}
+.rest{display:grid;gap:14px}
+.muted{color:var(--muted);font-size:14px}
+.desc{overflow-wrap:anywhere}
+.ad{display:grid;place-items:center;min-height:150px;margin:10px 0;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;background:var(--bg)}
+.prog{height:8px;background:var(--chip);border-radius:99px;overflow:hidden;margin:6px 0}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g),var(--y));transition:width 1s linear}
+.dlb{width:100%;padding:11px;font-size:17px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stats div b{display:block;font-size:20px;line-height:1.2}.stats span{font-size:13px;color:var(--muted)}
+.au{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.au img{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--chip)}
+.socs{display:flex;gap:8px;flex-wrap:wrap}
+.soc{color:#fff;text-decoration:none;border-radius:8px;padding:4px 12px;font-weight:600;font-size:14px}
+.facebook{background:#1877f2}.youtube{background:#e60000}.telegram{background:#229ed9}
+.share{display:flex;gap:8px;flex-wrap:wrap}.share .btn{flex:1}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.rc{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--text);transition:transform .15s}
+.rc:hover{transform:translateY(-3px)}
+.rc .rt{height:100px;background:var(--chip);display:grid;place-items:center}.rc img{width:100%;height:100%;object-fit:cover}
+.rc div.rb{padding:10px;font-weight:600;line-height:1.3}.rc small{display:block;color:var(--muted);font-weight:400}
+.empty{padding:34px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;margin-top:20px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#14181f;color:#fff;padding:10px 16px;border-radius:10px;z-index:20}
+footer{border-top:1px solid var(--line);margin-top:36px;padding:20px 0;color:var(--muted);font-size:14px}
+@media (prefers-reduced-motion:reduce){.rgb,.badge::after,.sk::after,.gv::after,.layout{animation:none}.prog i{transition:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="bus" viewBox="0 0 120 56"><rect x="4" y="6" width="112" height="38" rx="7" fill="var(--b)"/><rect x="4" y="30" width="112" height="7" fill="var(--s)"/><g fill="#dff3ff" opacity=".92"><rect x="12" y="12" width="16" height="14" rx="2"/><rect x="32" y="12" width="16" height="14" rx="2"/><rect x="52" y="12" width="16" height="14" rx="2"/><rect x="72" y="12" width="16" height="14" rx="2"/><rect x="94" y="12" width="16" height="20" rx="2"/></g><circle cx="30" cy="46" r="7" fill="#1a1d24"/><circle cx="92" cy="46" r="7" fill="#1a1d24"/><circle cx="30" cy="46" r="3" fill="#9aa4b4"/><circle cx="92" cy="46" r="3" fill="#9aa4b4"/></symbol></svg>
+<header><div class="wrap bar">
+  <a class="logo" href="index.html"><svg><use href="#bus"/></svg><span class="rgb">Bus Skin Store BD</span></a>
+  <button class="btn" id="theme" aria-label="থিম বদলান">🌓</button>
+  <button class="btn p" id="login">গুগল দিয়ে লগইন</button>
+  <div class="me" id="me" hidden></div>
+</div></header>
+<main class="wrap" id="page">
+  <div class="layout"><div class="hero"><div class="sk" style="aspect-ratio:16/9"></div><div class="sk" style="height:40px;margin-top:16px;width:70%"></div></div><div class="side"><div class="sk" style="height:300px"></div></div></div>
+</main>
+<footer><div class="wrap">© Bus Skin Store BD</div></footer>
+<div id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+var $=function(i){return document.getElementById(i)},
+esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
+safe=function(u){return /^https?:\/\//i.test(u||"")?u:""},
+BADGE={owner:"Owner",moderator:"Moderator",premium:"Premium",vip:"VIP"},
+FREE=["owner","moderator","premium","vip"],db,M,role="user",gal=[],ROUNDS=2,SECS=15;
+
+function note(t){var n=$("toast");n.textContent=t;n.hidden=false;clearTimeout(note.t);note.t=setTimeout(function(){n.hidden=true},3000)}
+function fmt(n){n=n||0;return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":String(n)}
+function sz(b){return b?(b>=1073741824?(b/1073741824).toFixed(1)+" GB":Math.max(1,Math.round(b/1048576))+" MB"):"—"}
+function dt(d){try{return new Date(d).toLocaleDateString("bn-BD",{day:"numeric",month:"long",year:"numeric"})}catch(e){return""}}
+function nl(t){return esc(t).replace(/\n/g,"<br>")}
+function badge(r){return BADGE[r]?'<span class="badge '+esc(r)+'">'+BADGE[r]+'</span>':""}
+function soc(m){return [["facebook","Facebook"],["youtube","YouTube"],["telegram","Telegram"]].map(function(x){var u=safe(m["social_"+x[0]]);return u?'<a class="soc '+x[0]+'" href="'+esc(u)+'" target="_blank" rel="noopener noreferrer">'+x[1]+'</a>':""}).join("")}
+function fail(t){$("page").innerHTML='<div class="empty">'+esc(t)+' <a href="index.html">হোমে ফিরুন</a></div>'}
+
+function show(i){
+ var u=gal[i];if(u==null)return;
+ var b=$("big");b.querySelector("img").src=u;
+ document.querySelectorAll(".thumbs button").forEach(function(x){x.setAttribute("aria-current",x.dataset.i==i)});
+}
+function render(){
+ var m=M,u=m.uploader||{};
+ gal=[m.cover_url].concat(m.previews||[]).filter(safe);
+ gal=gal.filter(function(x,i){return gal.indexOf(x)==i});
+ var fresh=m.created_at&&Date.now()-new Date(m.created_at).getTime()<6048e5;
+ var big=gal.length?'<img src="'+esc(gal[0])+'" alt="'+esc(m.title)+'">':'<svg><use href="#bus"/></svg>';
+ var th=gal.length>1?'<div class="tw"><button class="arr" data-d="-1" aria-label="আগে">‹</button><div class="thumbs" id="th">'+gal.map(function(g,i){return '<button data-i="'+i+'" aria-current="'+(i==0)+'"><img loading="lazy" src="'+esc(g)+'" alt=""></button>'}).join("")+'</div><button class="arr" data-d="1" aria-label="পরে">›</button></div>':"";
+ var chips=(m.game&&m.game.name?'<span class="c">'+esc(m.game.name)+'</span>':"")+(m.category&&m.category.name?'<span class="c">'+esc(m.category.name)+'</span>':"")+(m.game_version?'<span class="c gv">🎮 '+esc(m.game_version)+'</span>':"");
+ var st=m.status!="approved"?'<div class="box" style="margin-bottom:12px">এই মড এখনো অ্যাপ্রুভ হয়নি ('+esc(m.status)+'), শুধু আপনি দেখতে পাচ্ছেন।</div>':"";
+ $("page").innerHTML=
+ '<nav class="crumb"><a href="index.html">হোম</a> › '+esc(m.game?m.game.name:"")+' › '+esc(m.category?m.category.name:"")+'</nav>'+st+
+ '<div class="layout"><div class="hero"><div class="big" id="big">'+(fresh?'<span class="tag">নতুন</span>':"")+big+'</div>'+th+'<h1>'+esc(m.title)+'</h1><div class="chips">'+chips+'</div></div>'+
+ '<aside class="side"><div class="box" id="dl"></div>'+
+ '<div class="box"><div class="au">'+(u.avatar_url?'<img src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'<img alt="">')+'<div><b>'+esc(u.display_name||"অজানা")+'</b> '+badge(u.role)+'<div class="muted">আপলোডার</div></div></div>'+(soc(m)?'<div class="socs">'+soc(m)+'</div>':'<div class="muted">কোনো সোশ্যাল লিংক নেই</div>')+'</div>'+
+ '<div class="box stats"><div><b id="sd">'+fmt(m.downloads)+'</b><span>ডাউনলোড</span></div><div><b>'+fmt(m.views)+'</b><span>ভিউ</span></div><div><b>'+sz(m.file_size)+'</b><span>সাইজ</span></div><div><b style="font-size:15px">'+esc(dt(m.created_at))+'</b><span>তারিখ</span></div></div>'+
+ '<div class="box"><h3>শেয়ার করুন</h3><div class="share"><a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href)+'">Facebook</a><a class="btn" target="_blank" rel="noopener noreferrer" href="https://t.me/share/url?url='+encodeURIComponent(location.href)+'&text='+encodeURIComponent(m.title)+'">Telegram</a><button class="btn" id="cp">লিংক কপি</button></div></div></aside>'+
+ '<div class="rest">'+
+ '<div class="box"><h2>বিবরণ</h2><div class="desc">'+(m.description?nl(m.description):'<span class="muted">কোনো বিবরণ দেওয়া হয়নি।</span>')+'</div></div>'+
+ (m.install_steps?'<div class="box"><h2>কীভাবে ইনস্টল করবেন</h2><div class="desc">'+nl(m.install_steps)+'</div></div>':"")+
+ (m.credit_name?'<div class="box"><h2>ক্রেডিট</h2><div class="desc">মূল নির্মাতা: <b>'+esc(m.credit_name)+'</b></div></div>':"")+
+ '<div id="rel"></div></div></div>';
+ document.title=m.title+" – Bus Skin Store BD";
+ dlBox();related();
+}
+
+/* ডাউনলোড বক্স: ব্যাজ নেই হলে ২ বার ১৫ সেকেন্ড */
+function dlBox(){
+ var url=safe(M.alt_link),b=$("dl");
+ if(!url){b.innerHTML='<h3>ডাউনলোড</h3><p class="muted">ডাউনলোড লিংক শীঘ্রই যোগ হবে।</p>';return}
+ if(FREE.indexOf(role)>-1){b.innerHTML='<h3>ডাউনলোড</h3><p class="muted">আপনার ব্যাজের জন্য বিজ্ঞাপন ছাড়াই ডাউনলোড ✨</p><button class="btn p dlb" id="go">ডাউনলোড করুন</button>';$("go").onclick=go;return}
+ stage(1);
+}
+function stage(n){
+ $("dl").innerHTML='<h3>ডাউনলোড (ধাপ '+n+'/'+ROUNDS+')</h3><div class="ad">বিজ্ঞাপনের জায়গা</div><div class="prog"><i id="pb"></i></div><p class="muted" id="ct"></p><button class="btn p dlb" id="nx" disabled>অপেক্ষা করুন...</button><p class="muted" style="margin:8px 0 0">ব্যাজ থাকলে বিজ্ঞাপন ছাড়াই ডাউনলোড করা যায়।</p>';
+ var left=SECS;
+ function up(){$("ct").textContent="অপেক্ষা করুন: "+left+" সেকেন্ড";$("pb").style.width=((SECS-left)/SECS*100)+"%"}
+ up();
+ var t=setInterval(function(){
+  if(document.hidden)return;
+  left--;up();
+  if(left<=0){
+   clearInterval(t);$("ct").textContent="প্রস্তুত ✅";$("pb").style.width="100%";
+   var x=$("nx");x.disabled=false;x.textContent=n<ROUNDS?"পরের ধাপে যান":"ডাউনলোড করুন";
+   x.onclick=n<ROUNDS?function(){stage(n+1)}:go;
+  }
+ },1000);
+}
+function go(){
+ var u=safe(M.alt_link);if(!u)return;
+ db.rpc("increment_downloads",{p_id:M.id});
+ M.downloads=(M.downloads||0)+1;$("sd").textContent=fmt(M.downloads);
+ window.open(u,"_blank","noopener");
+}
+async function related(){
+ var r=await db.from("mods").select("id,title,cover_url,downloads").eq("category_id",M.category_id).eq("status","approved").neq("id",M.id).order("downloads",{ascending:false}).limit(6);
+ if(r.error||!r.data.length)return;
+ $("rel").innerHTML='<h2>আরও মড</h2><div class="grid">'+r.data.map(function(m){return '<a class="rc" href="mod.html?id='+m.id+'"><div class="rt">'+(safe(m.cover_url)?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="">':'<svg style="width:60%;--b:var(--g);--s:var(--y)"><use href="#bus"/></svg>')+'</div><div class="rb">'+esc(m.title)+'<small>⬇ '+fmt(m.downloads)+'</small></div></a>'}).join("")+'</div>';
+}
+
+async function init(){
+ if(typeof SUPABASE_URL=="undefined"||SUPABASE_URL.indexOf("supabase.co")<0){fail("config.js-এ Supabase URL ও কী বসাতে হবে।");return}
+ db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ var q=new URLSearchParams(location.search),id=+(q.get("id")||0);
+ try{if(id)sessionStorage.setItem("mid",id);else id=+(sessionStorage.getItem("mid")||0)}catch(e){}
+ $("login").onclick=function(){db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname}})};
+ var s=(await db.auth.getSession()).data.session;
+ if(s){
+  var p=await db.from("profiles").select("display_name,avatar_url,role").eq("id",s.user.id).single();
+  if(p.data){role=p.data.role;$("login").hidden=true;
+   $("me").innerHTML=(p.data.avatar_url?'<img src="'+esc(p.data.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+badge(role)+'<button class="btn" id="lo">লগআউট</button>';$("me").hidden=false;
+   $("lo").onclick=async function(){await db.auth.signOut();location.reload()}}
+ }
+ if(!id){fail("মড পাওয়া যায়নি।");return}
+ var r=await db.from("mods").select("*,uploader:profiles!uploader_id(display_name,avatar_url,role),game:games(name),category:categories(name)").eq("id",id).maybeSingle();
+ if(r.error||!r.data){fail("মড পাওয়া যায়নি।");return}
+ M=r.data;render();
+ try{var k="v"+id;if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,1);db.rpc("increment_views",{p_id:id})}}catch(e){}
+}
+document.addEventListener("click",function(e){
+ var t=e.target.closest(".thumbs button");if(t){show(+t.dataset.i);return}
+ var a=e.target.closest(".arr");if(a){$("th").scrollBy({left:a.dataset.d*240,behavior:"smooth"});return}
+ if(e.target.id=="cp"){navigator.clipboard&&navigator.clipboard.writeText(location.href).then(function(){note("লিংক কপি হয়েছে")},function(){prompt("লিংক কপি করুন:",location.href)})}
+});
+var R=document.documentElement;
+try{var s0=localStorage.getItem("t");if(s0)R.dataset.theme=s0}catch(e){}
+$("theme").onclick=function(){var cur=R.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),n=cur=="dark"?"light":"dark";R.dataset.theme=n;try{localStorage.setItem("t",n)}catch(e){}};
+init();
+</script>
+</body>
+</html>

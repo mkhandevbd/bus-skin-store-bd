@@ -90,6 +90,17 @@ h1 em{font-style:normal;color:var(--g)}
 .strip .sk{width:96px;height:62px;padding:0;border-top:0}
 @media(max-width:640px){.logo span{display:inline}.logo{font-size:18px}}
 @media (prefers-reduced-motion:reduce){.rgb,h1 em{animation:none}}
+a.t{color:inherit;text-decoration:none;display:block}a.t:hover{color:var(--g)}
+a.btn{text-decoration:none;display:block;text-align:center}
+.btn.p{position:relative;overflow:hidden}
+.btn.p::after{content:"";position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent)}
+.btn.p:hover::after{transform:translateX(120%);transition:transform .6s}
+.card{animation:fi .45s both}@keyframes fi{from{opacity:0;transform:translateY(10px)}}
+.strip div{transition:transform .15s}.strip div:hover{transform:translateY(-2px)}
+.badge::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:sh 2.4s infinite}
+.owner{box-shadow:0 0 8px rgba(217,45,63,.7)}.moderator{box-shadow:0 0 8px rgba(37,99,235,.6)}.premium{box-shadow:0 0 8px rgba(183,121,31,.7)}.vip{box-shadow:0 0 8px rgba(124,58,237,.7)}
+.th{text-decoration:none}
+@media (prefers-reduced-motion:reduce){.card{animation:none}.badge::after{animation:none}}
 </style>
 </head>
 <body>
@@ -140,7 +151,7 @@ function card(m){
  var u=m.uploader||{},b=BADGE[u.role]?'<span class="badge '+esc(u.role)+'">'+BADGE[u.role]+'</span>':'',
  c=S.cats.find(function(x){return x.id==m.category_id}),
  th=m.cover_url?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="'+esc(m.title)+'">':'<svg><use href="#bus"/></svg>';
- return '<article class="card"><div class="th">'+(isNew(m)?'<span class="tag">নতুন</span>':'')+th+'</div><div class="body"><div class="cat">'+esc(c?c.name:"")+'</div><div class="t">'+esc(m.title)+'</div><div class="meta">'+esc(u.display_name||"অজানা")+' '+b+'</div><div class="dl">⬇ '+fmt(m.downloads)+' ডাউনলোড</div><div class="acts"><button class="btn p">ডাউনলোড</button></div></div></article>';
+ return '<article class="card"><a class="th" href="mod.html?id='+m.id+'">'+(isNew(m)?'<span class="tag">নতুন</span>':'')+th+'</a><div class="body"><div class="cat">'+esc(c?c.name:"")+'</div><a class="t" href="mod.html?id='+m.id+'">'+esc(m.title)+'</a><div class="meta">'+esc(u.display_name||"অজানা")+' '+b+'</div><div class="dl">⬇ '+fmt(m.downloads)+' ডাউনলোড</div><div class="acts"><a class="btn p" href="mod.html?id='+m.id+'">ডাউনলোড</a></div></div></article>';
 }
 function row(title,L){return '<section><h2>'+title+'</h2><div class="grid">'+L.map(card).join("")+'</div></section>'}
 function sec(c){

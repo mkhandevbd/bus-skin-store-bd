@@ -48,6 +48,10 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 .pill.approved{background:#0a7d5a}.pill.rejected{background:#d92d3f}.pill.pending{background:#b7791f}
 .empty{padding:30px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#14181f;color:#fff;padding:10px 16px;border-radius:10px;z-index:20;max-width:90%}
+.pill{position:relative;overflow:hidden}
+.pill.owner,.pill.moderator,.pill.premium,.pill.vip{box-shadow:0 0 8px rgba(124,58,237,.5)}
+.pill.owner::after,.pill.moderator::after,.pill.premium::after,.pill.vip::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:sh 2.4s infinite}
+@keyframes sh{to{transform:translateX(100%)}}
 </style>
 </head>
 <body>
@@ -135,14 +139,14 @@ async function listMods(){
  l.innerHTML=r.data.map(function(m){
   var c=C.find(function(x){return x.id==m.category_id}),u=m.uploader||{};
   var b=(m.status=="pending"?'<button class="btn p" data-a="ok" data-id="'+m.id+'">অ্যাপ্রুভ</button><button class="btn" data-a="no" data-id="'+m.id+'">বাতিল</button>':"")+'<button class="btn d" data-a="del" data-id="'+m.id+'">মুছুন</button>';
-  return '<div class="row"><div class="grow"><b>'+esc(m.title)+'</b><div class="muted">'+esc(c?c.name:"")+' · '+esc(u.display_name||"অজানা")+' '+pill(u.role)+(m.alt_link?' · <a href="'+esc(m.alt_link)+'" target="_blank" rel="noopener noreferrer">লিংক</a>':"")+'</div></div>'+b+'</div>';
+  return '<div class="row"><div class="grow"><b>'+esc(m.title)+'</b><div class="muted">'+esc(c?c.name:"")+' · '+esc(u.display_name||"অজানা")+' '+pill(u.role)+(/^https?:\/\//i.test(m.alt_link||"")?' · <a href="'+esc(m.alt_link)+'" target="_blank" rel="noopener noreferrer">লিংক</a>':"")+'</div></div>'+b+'</div>';
  }).join("");
 }
 
 /* মড যোগ */
 function pAdd(){
  if(!G.length){$("panel").innerHTML='<div class="empty">আগে "গেম ও ক্যাটাগরি" ট্যাব থেকে গেম ও ক্যাটাগরি যোগ করুন।</div>';return}
- $("panel").innerHTML='<div class="box"><h3>নতুন মড যোগ</h3><div class="form"><label>গেম<select id="mg">'+G.map(function(g){return '<option value="'+g.id+'">'+esc(g.name)+'</option>'}).join("")+'</select></label><label>ক্যাটাগরি<select id="mc"></select></label><label>নাম<input type="text" id="mt" maxlength="120"></label><label>বিবরণ<textarea id="md" rows="3" maxlength="1000"></textarea></label><label>কভার ছবি (PNG, JPG, WEBP, সর্বোচ্চ ৫ MB)<input type="file" id="mf" accept="image/png,image/jpeg,image/webp"></label><label>ডাউনলোড লিংক (Mega, Drive বা Telegram)<input type="url" id="ml" placeholder="https://"></label><div class="muted">সরাসরি ফাইল আপলোড (B2) পরের ধাপে যোগ হবে। এখন লিংক দিন।</div><button class="btn p" id="ms">যোগ করুন</button></div></div>';
+ $("panel").innerHTML='<div class="box"><h3>নতুন মড যোগ</h3><div class="form"><label>গেম<select id="mg">'+G.map(function(g){return '<option value="'+g.id+'">'+esc(g.name)+'</option>'}).join("")+'</select></label><label>ক্যাটাগরি<select id="mc"></select></label><label>নাম<input type="text" id="mt" maxlength="120"></label><label>বিবরণ<textarea id="md" rows="3" maxlength="1000"></textarea></label><label>মেইন ছবি (বড় করে প্রথমে দেখাবে, সর্বোচ্চ ৫ MB)<input type="file" id="mf" accept="image/png,image/jpeg,image/webp"></label><label>প্রিভিউ ছবি (একসাথে একাধিক বাছুন, সর্বোচ্চ ৮টি)<input type="file" id="mp" accept="image/png,image/jpeg,image/webp" multiple></label><label>গেম ভার্সন (ঐচ্ছিক, যেমন BUSSID v4.3)<input type="text" id="mv" maxlength="40"></label><label>কীভাবে ইনস্টল করবেন (ঐচ্ছিক)<textarea id="mi" rows="3" maxlength="1500"></textarea></label><label>মূল নির্মাতার নাম (ঐচ্ছিক)<input type="text" id="mn" maxlength="80"></label><label>লেখকের Facebook লিংক (ঐচ্ছিক)<input type="url" id="sf" placeholder="https://"></label><label>লেখকের YouTube লিংক (ঐচ্ছিক)<input type="url" id="sy" placeholder="https://"></label><label>লেখকের Telegram লিংক (ঐচ্ছিক)<input type="url" id="st" placeholder="https://"></label><label>ডাউনলোড লিংক (Mega, Drive বা Telegram)<input type="url" id="ml" placeholder="https://"></label><div class="muted">সরাসরি ফাইল আপলোড (B2) পরের ধাপে যোগ হবে। এখন লিংক দিন।</div><button class="btn p" id="ms">যোগ করুন</button></div></div>';
  var fill=function(){$("mc").innerHTML=C.filter(function(c){return c.game_id==$("mg").value}).map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>'}).join("")};
  $("mg").onchange=fill;fill();
  $("ms").onclick=async function(){
@@ -150,8 +154,8 @@ function pAdd(){
   if(!t||!cat){note("নাম ও ক্যাটাগরি দিন");return}
   this.disabled=true;
   try{
-   var f=$("mf").files[0],cover=f?await upImg(f,"covers"):null;
-   var r=await db.from("mods").insert({game_id:+$("mg").value,category_id:cat,title:t,description:$("md").value.trim()||null,cover_url:cover,alt_link:$("ml").value.trim()||null,uploader_id:ME.id,status:"approved",approved_at:new Date().toISOString(),reviewed_by:ME.id});
+   var f=$("mf").files[0],cover=f?await upImg(f,"covers"):null;var pv=[],fl=[].slice.call($("mp").files).slice(0,8);for(var i=0;i<fl.length;i++)pv.push(await upImg(fl[i],"previews"));
+   var r=await db.from("mods").insert({game_id:+$("mg").value,category_id:cat,title:t,description:$("md").value.trim()||null,cover_url:cover,alt_link:$("ml").value.trim()||null,previews:pv,game_version:$("mv").value.trim()||null,install_steps:$("mi").value.trim()||null,credit_name:$("mn").value.trim()||null,social_facebook:$("sf").value.trim()||null,social_youtube:$("sy").value.trim()||null,social_telegram:$("st").value.trim()||null,uploader_id:ME.id,status:"approved",approved_at:new Date().toISOString(),reviewed_by:ME.id});
    if(r.error)throw r.error;
    note("মড যোগ হয়েছে");pAdd();
   }catch(e){err(e);this.disabled=false}
