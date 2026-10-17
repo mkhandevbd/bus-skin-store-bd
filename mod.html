@@ -82,6 +82,11 @@ h1{font-size:clamp(24px,4vw,34px);line-height:1.25;margin:16px 0 8px;overflow-wr
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#14181f;color:#fff;padding:10px 16px;border-radius:10px;z-index:20}
 footer{border-top:1px solid var(--line);margin-top:36px;padding:20px 0;color:var(--muted);font-size:14px}
 @media (prefers-reduced-motion:reduce){.rgb,.badge::after,.sk::after,.gv::after,.layout{animation:none}.prog i{transition:none}}
+.adslot{display:flex;justify-content:center;margin:14px 0}
+.adph{display:grid;place-items:center;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;background:var(--card)}
+.big iframe{width:100%;height:100%;border:0}
+.thumbs button{position:relative}
+.play{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:20px;background:rgba(0,0,0,.35)}
 </style>
 </head>
 <body>
@@ -93,6 +98,7 @@ footer{border-top:1px solid var(--line);margin-top:36px;padding:20px 0;color:var
   <button class="btn p" id="login">গুগল দিয়ে লগইন</button>
   <div class="me" id="me" hidden></div>
 </div></header>
+<div class="wrap"><div class="adslot" data-ad="top"></div></div>
 <main class="wrap" id="page">
   <div class="layout"><div class="hero"><div class="sk" style="aspect-ratio:16/9"></div><div class="sk" style="height:40px;margin-top:16px;width:70%"></div></div><div class="side"><div class="sk" style="height:300px"></div></div></div>
 </main>
@@ -100,13 +106,14 @@ footer{border-top:1px solid var(--line);margin-top:36px;padding:20px 0;color:var
 <div id="toast" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="ads.js"></script>
 <script src="config.js"></script>
 <script>
 var $=function(i){return document.getElementById(i)},
 esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
 safe=function(u){return /^https?:\/\//i.test(u||"")?u:""},
 BADGE={owner:"Owner",moderator:"Moderator",premium:"Premium",vip:"VIP"},
-FREE=["owner","moderator","premium","vip"],db,M,role="user",gal=[],ROUNDS=2,SECS=15;
+FREE=["owner","moderator","premium","vip"],db,M,role="user",gal=[],FRESH=false,ROUNDS=2,SECS=15;
 
 function note(t){var n=$("toast");n.textContent=t;n.hidden=false;clearTimeout(note.t);note.t=setTimeout(function(){n.hidden=true},3000)}
 function fmt(n){n=n||0;return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":String(n)}
@@ -117,18 +124,25 @@ function badge(r){return BADGE[r]?'<span class="badge '+esc(r)+'">'+BADGE[r]+'</
 function soc(m){return [["facebook","Facebook"],["youtube","YouTube"],["telegram","Telegram"]].map(function(x){var u=safe(m["social_"+x[0]]);return u?'<a class="soc '+x[0]+'" href="'+esc(u)+'" target="_blank" rel="noopener noreferrer">'+x[1]+'</a>':""}).join("")}
 function fail(t){$("page").innerHTML='<div class="empty">'+esc(t)+' <a href="index.html">হোমে ফিরুন</a></div>'}
 
+function ytId(u){var m=/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/))([\w-]{11})/.exec(u||"");return m?m[1]:""}
+function itemHTML(i,auto){
+ var g=gal[i];if(!g)return '<svg><use href="#bus"/></svg>';
+ if(g.t=="v")return '<iframe src="https://www.youtube-nocookie.com/embed/'+g.id+'?rel=0'+(auto?'&autoplay=1':'')+'" title="প্রিভিউ ভিডিও" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>';
+ return '<img src="'+esc(g.u)+'" alt="'+esc(M.title)+'">';
+}
 function show(i){
- var u=gal[i];if(u==null)return;
- var b=$("big");b.querySelector("img").src=u;
+ if(!gal[i])return;
+ $("big").innerHTML=(i==0&&FRESH?'<span class="tag">নতুন</span>':"")+itemHTML(i,true);
  document.querySelectorAll(".thumbs button").forEach(function(x){x.setAttribute("aria-current",x.dataset.i==i)});
 }
 function render(){
  var m=M,u=m.uploader||{};
- gal=[m.cover_url].concat(m.previews||[]).filter(safe);
- gal=gal.filter(function(x,i){return gal.indexOf(x)==i});
- var fresh=m.created_at&&Date.now()-new Date(m.created_at).getTime()<6048e5;
- var big=gal.length?'<img src="'+esc(gal[0])+'" alt="'+esc(m.title)+'">':'<svg><use href="#bus"/></svg>';
- var th=gal.length>1?'<div class="tw"><button class="arr" data-d="-1" aria-label="আগে">‹</button><div class="thumbs" id="th">'+gal.map(function(g,i){return '<button data-i="'+i+'" aria-current="'+(i==0)+'"><img loading="lazy" src="'+esc(g)+'" alt=""></button>'}).join("")+'</div><button class="arr" data-d="1" aria-label="পরে">›</button></div>':"";
+ var imgs=[m.cover_url].concat(m.previews||[]).filter(safe);imgs=imgs.filter(function(x,i){return imgs.indexOf(x)==i});
+ gal=imgs.map(function(u){return {t:"i",u:u}});
+ var vid=ytId(m.video_url);if(vid)gal.splice(Math.min(1,gal.length),0,{t:"v",id:vid});
+ FRESH=!!(m.created_at&&Date.now()-new Date(m.created_at).getTime()<6048e5);
+ var fresh=FRESH,big=itemHTML(0,false);
+ var th=gal.length>1?'<div class="tw"><button class="arr" data-d="-1" aria-label="আগে">‹</button><div class="thumbs" id="th">'+gal.map(function(g,i){return '<button data-i="'+i+'" aria-current="'+(i==0)+'">'+(g.t=="v"?'<img loading="lazy" src="https://i.ytimg.com/vi/'+g.id+'/hqdefault.jpg" alt=""><span class="play">▶</span>':'<img loading="lazy" src="'+esc(g.u)+'" alt="">')+'</button>'}).join("")+'</div><button class="arr" data-d="1" aria-label="পরে">›</button></div>':"";
  var chips=(m.game&&m.game.name?'<span class="c">'+esc(m.game.name)+'</span>':"")+(m.category&&m.category.name?'<span class="c">'+esc(m.category.name)+'</span>':"")+(m.game_version?'<span class="c gv">🎮 '+esc(m.game_version)+'</span>':"");
  var st=m.status!="approved"?'<div class="box" style="margin-bottom:12px">এই মড এখনো অ্যাপ্রুভ হয়নি ('+esc(m.status)+'), শুধু আপনি দেখতে পাচ্ছেন।</div>':"";
  $("page").innerHTML=
@@ -137,14 +151,14 @@ function render(){
  '<aside class="side"><div class="box" id="dl"></div>'+
  '<div class="box"><div class="au">'+(u.avatar_url?'<img src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'<img alt="">')+'<div><b>'+esc(u.display_name||"অজানা")+'</b> '+badge(u.role)+'<div class="muted">আপলোডার</div></div></div>'+(soc(m)?'<div class="socs">'+soc(m)+'</div>':'<div class="muted">কোনো সোশ্যাল লিংক নেই</div>')+'</div>'+
  '<div class="box stats"><div><b id="sd">'+fmt(m.downloads)+'</b><span>ডাউনলোড</span></div><div><b>'+fmt(m.views)+'</b><span>ভিউ</span></div><div><b>'+sz(m.file_size)+'</b><span>সাইজ</span></div><div><b style="font-size:15px">'+esc(dt(m.created_at))+'</b><span>তারিখ</span></div></div>'+
- '<div class="box"><h3>শেয়ার করুন</h3><div class="share"><a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href)+'">Facebook</a><a class="btn" target="_blank" rel="noopener noreferrer" href="https://t.me/share/url?url='+encodeURIComponent(location.href)+'&text='+encodeURIComponent(m.title)+'">Telegram</a><button class="btn" id="cp">লিংক কপি</button></div></div></aside>'+
+ '<div class="adslot" data-ad="side"></div><div class="box"><h3>শেয়ার করুন</h3><div class="share"><a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href)+'">Facebook</a><a class="btn" target="_blank" rel="noopener noreferrer" href="https://t.me/share/url?url='+encodeURIComponent(location.href)+'&text='+encodeURIComponent(m.title)+'">Telegram</a><button class="btn" id="cp">লিংক কপি</button></div></div></aside>'+
  '<div class="rest">'+
  '<div class="box"><h2>বিবরণ</h2><div class="desc">'+(m.description?nl(m.description):'<span class="muted">কোনো বিবরণ দেওয়া হয়নি।</span>')+'</div></div>'+
  (m.install_steps?'<div class="box"><h2>কীভাবে ইনস্টল করবেন</h2><div class="desc">'+nl(m.install_steps)+'</div></div>':"")+
  (m.credit_name?'<div class="box"><h2>ক্রেডিট</h2><div class="desc">মূল নির্মাতা: <b>'+esc(m.credit_name)+'</b></div></div>':"")+
- '<div id="rel"></div></div></div>';
+ '<div class="adslot" data-ad="rel"></div><div id="rel"></div></div></div>';
  document.title=m.title+" – Bus Skin Store BD";
- dlBox();related();
+ dlBox();related();ADS.fill(document);
 }
 
 /* ডাউনলোড বক্স: ব্যাজ নেই হলে ২ বার ১৫ সেকেন্ড */
@@ -155,7 +169,8 @@ function dlBox(){
  stage(1);
 }
 function stage(n){
- $("dl").innerHTML='<h3>ডাউনলোড (ধাপ '+n+'/'+ROUNDS+')</h3><div class="ad">বিজ্ঞাপনের জায়গা</div><div class="prog"><i id="pb"></i></div><p class="muted" id="ct"></p><button class="btn p dlb" id="nx" disabled>অপেক্ষা করুন...</button><p class="muted" style="margin:8px 0 0">ব্যাজ থাকলে বিজ্ঞাপন ছাড়াই ডাউনলোড করা যায়।</p>';
+ $("dl").innerHTML='<h3>ডাউনলোড (ধাপ '+n+'/'+ROUNDS+')</h3><div class="adslot" data-ad="'+(n==1?"gate1":"gateVideo")+'"></div><div class="prog"><i id="pb"></i></div><p class="muted" id="ct"></p><button class="btn p dlb" id="nx" disabled>অপেক্ষা করুন...</button><p class="muted" style="margin:8px 0 0">ব্যাজ থাকলে বিজ্ঞাপন ছাড়াই ডাউনলোড করা যায়।</p>';
+ ADS.fill($("dl"));
  var left=SECS;
  function up(){$("ct").textContent="অপেক্ষা করুন: "+left+" সেকেন্ড";$("pb").style.width=((SECS-left)/SECS*100)+"%"}
  up();
@@ -197,7 +212,7 @@ async function init(){
  if(!id){fail("মড পাওয়া যায়নি।");return}
  var r=await db.from("mods").select("*,uploader:profiles!uploader_id(display_name,avatar_url,role),game:games(name),category:categories(name)").eq("id",id).maybeSingle();
  if(r.error||!r.data){fail("মড পাওয়া যায়নি।");return}
- M=r.data;render();
+ ADS.start(role);M=r.data;render();
  try{var k="v"+id;if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,1);db.rpc("increment_views",{p_id:id})}}catch(e){}
 }
 document.addEventListener("click",function(e){

@@ -52,6 +52,7 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 .pill.owner,.pill.moderator,.pill.premium,.pill.vip{box-shadow:0 0 8px rgba(124,58,237,.5)}
 .pill.owner::after,.pill.moderator::after,.pill.premium::after,.pill.vip::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:sh 2.4s infinite}
 @keyframes sh{to{transform:translateX(100%)}}
+.mono{font-family:ui-monospace,Consolas,monospace;font-size:13px}
 </style>
 </head>
 <body>
@@ -71,7 +72,7 @@ var $=function(i){return document.getElementById(i)},
 esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
 db,ME,G=[],C=[],
 ROLES=["user","vip","premium","moderator","owner"],
-TABS=[["ov","ওভারভিউ"],["ap","মড তালিকা"],["add","মড যোগ"],["gm","গেম ও ক্যাটাগরি",1],["us","ইউজার ও ব্যাজ",1]],
+TABS=[["ov","ওভারভিউ"],["ap","মড তালিকা"],["add","মড যোগ"],["gm","গেম ও ক্যাটাগরি",1],["us","ইউজার ও ব্যাজ",1],["ad","বিজ্ঞাপন",1]],
 ST={pending:"অপেক্ষমাণ",approved:"অ্যাপ্রুভড",rejected:"বাতিল"};
 
 function note(t){var n=$("toast");n.textContent=t;n.hidden=false;clearTimeout(note.t);note.t=setTimeout(function(){n.hidden=true},4500)}
@@ -115,7 +116,7 @@ function shell(){
 }
 function show(p){
  document.querySelectorAll("#tabs .tab").forEach(function(b){b.setAttribute("aria-selected",b.dataset.p==p)});
- ({ov:pOv,ap:pAp,add:pAdd,gm:pGm,us:pUs})[p]();
+ ({ov:pOv,ap:pAp,add:pAdd,gm:pGm,us:pUs,ad:pAd})[p]();
 }
 
 /* ওভারভিউ */
@@ -146,7 +147,7 @@ async function listMods(){
 /* মড যোগ */
 function pAdd(){
  if(!G.length){$("panel").innerHTML='<div class="empty">আগে "গেম ও ক্যাটাগরি" ট্যাব থেকে গেম ও ক্যাটাগরি যোগ করুন।</div>';return}
- $("panel").innerHTML='<div class="box"><h3>নতুন মড যোগ</h3><div class="form"><label>গেম<select id="mg">'+G.map(function(g){return '<option value="'+g.id+'">'+esc(g.name)+'</option>'}).join("")+'</select></label><label>ক্যাটাগরি<select id="mc"></select></label><label>নাম<input type="text" id="mt" maxlength="120"></label><label>বিবরণ<textarea id="md" rows="3" maxlength="1000"></textarea></label><label>মেইন ছবি (বড় করে প্রথমে দেখাবে, সর্বোচ্চ ৫ MB)<input type="file" id="mf" accept="image/png,image/jpeg,image/webp"></label><label>প্রিভিউ ছবি (একসাথে একাধিক বাছুন, সর্বোচ্চ ৮টি)<input type="file" id="mp" accept="image/png,image/jpeg,image/webp" multiple></label><label>গেম ভার্সন (ঐচ্ছিক, যেমন BUSSID v4.3)<input type="text" id="mv" maxlength="40"></label><label>কীভাবে ইনস্টল করবেন (ঐচ্ছিক)<textarea id="mi" rows="3" maxlength="1500"></textarea></label><label>মূল নির্মাতার নাম (ঐচ্ছিক)<input type="text" id="mn" maxlength="80"></label><label>লেখকের Facebook লিংক (ঐচ্ছিক)<input type="url" id="sf" placeholder="https://"></label><label>লেখকের YouTube লিংক (ঐচ্ছিক)<input type="url" id="sy" placeholder="https://"></label><label>লেখকের Telegram লিংক (ঐচ্ছিক)<input type="url" id="st" placeholder="https://"></label><label>ডাউনলোড লিংক (Mega, Drive বা Telegram)<input type="url" id="ml" placeholder="https://"></label><div class="muted">সরাসরি ফাইল আপলোড (B2) পরের ধাপে যোগ হবে। এখন লিংক দিন।</div><button class="btn p" id="ms">যোগ করুন</button></div></div>';
+ $("panel").innerHTML='<div class="box"><h3>নতুন মড যোগ</h3><div class="form"><label>গেম<select id="mg">'+G.map(function(g){return '<option value="'+g.id+'">'+esc(g.name)+'</option>'}).join("")+'</select></label><label>ক্যাটাগরি<select id="mc"></select></label><label>নাম<input type="text" id="mt" maxlength="120"></label><label>বিবরণ<textarea id="md" rows="3" maxlength="1000"></textarea></label><label>মেইন ছবি (বড় করে প্রথমে দেখাবে, সর্বোচ্চ ৫ MB)<input type="file" id="mf" accept="image/png,image/jpeg,image/webp"></label><label>প্রিভিউ ছবি (একসাথে একাধিক বাছুন, সর্বোচ্চ ৮টি)<input type="file" id="mp" accept="image/png,image/jpeg,image/webp" multiple></label><label>YouTube প্রিভিউ ভিডিও লিংক (ঐচ্ছিক)<input type="url" id="mvd" placeholder="https://www.youtube.com/watch?v=..."></label><label>গেম ভার্সন (ঐচ্ছিক, যেমন BUSSID v4.3)<input type="text" id="mv" maxlength="40"></label><label>কীভাবে ইনস্টল করবেন (ঐচ্ছিক)<textarea id="mi" rows="3" maxlength="1500"></textarea></label><label>মূল নির্মাতার নাম (ঐচ্ছিক)<input type="text" id="mn" maxlength="80"></label><label>লেখকের Facebook লিংক (ঐচ্ছিক)<input type="url" id="sf" placeholder="https://"></label><label>লেখকের YouTube লিংক (ঐচ্ছিক)<input type="url" id="sy" placeholder="https://"></label><label>লেখকের Telegram লিংক (ঐচ্ছিক)<input type="url" id="st" placeholder="https://"></label><label>ডাউনলোড লিংক (Mega, Drive বা Telegram)<input type="url" id="ml" placeholder="https://"></label><div class="muted">সরাসরি ফাইল আপলোড (B2) পরের ধাপে যোগ হবে। এখন লিংক দিন।</div><button class="btn p" id="ms">যোগ করুন</button></div></div>';
  var fill=function(){$("mc").innerHTML=C.filter(function(c){return c.game_id==$("mg").value}).map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>'}).join("")};
  $("mg").onchange=fill;fill();
  $("ms").onclick=async function(){
@@ -155,7 +156,7 @@ function pAdd(){
   this.disabled=true;
   try{
    var f=$("mf").files[0],cover=f?await upImg(f,"covers"):null;var pv=[],fl=[].slice.call($("mp").files).slice(0,8);for(var i=0;i<fl.length;i++)pv.push(await upImg(fl[i],"previews"));
-   var r=await db.from("mods").insert({game_id:+$("mg").value,category_id:cat,title:t,description:$("md").value.trim()||null,cover_url:cover,alt_link:$("ml").value.trim()||null,previews:pv,game_version:$("mv").value.trim()||null,install_steps:$("mi").value.trim()||null,credit_name:$("mn").value.trim()||null,social_facebook:$("sf").value.trim()||null,social_youtube:$("sy").value.trim()||null,social_telegram:$("st").value.trim()||null,uploader_id:ME.id,status:"approved",approved_at:new Date().toISOString(),reviewed_by:ME.id});
+   var r=await db.from("mods").insert({game_id:+$("mg").value,category_id:cat,title:t,description:$("md").value.trim()||null,cover_url:cover,alt_link:$("ml").value.trim()||null,previews:pv,game_version:$("mv").value.trim()||null,video_url:$("mvd").value.trim()||null,install_steps:$("mi").value.trim()||null,credit_name:$("mn").value.trim()||null,social_facebook:$("sf").value.trim()||null,social_youtube:$("sy").value.trim()||null,social_telegram:$("st").value.trim()||null,uploader_id:ME.id,status:"approved",approved_at:new Date().toISOString(),reviewed_by:ME.id});
    if(r.error)throw r.error;
    note("মড যোগ হয়েছে");pAdd();
   }catch(e){err(e);this.disabled=false}
@@ -183,6 +184,33 @@ async function pUs(){
  }).join("");
 }
 
+/* বিজ্ঞাপন সেটিং (শুধু Owner) */
+var ADF=[["popunder","Popunder কোড","সব পেজে নিজে বসবে, আলাদা কিছু করতে হবে না"],["socialbar","Social Bar কোড","সব পেজে নিজে বসবে"],["top_d","ওপরের ব্যানার, কম্পিউটার (728x90)",""],["top_m","ওপরের ব্যানার, মোবাইল (320x50)",""],["mid","হোমপেজের মাঝের ব্যানার (300x250)",""],["side","মড পেজের ডান পাশের ব্যানার (300x250)",""],["rel","মড পেজের নিচের Native Banner",""],["bottom","হোমপেজের নিচের Native Banner",""],["gate1","ডাউনলোড ধাপ ১: ব্যানার (300x250)",""]];
+async function pAd(){
+ var r=await db.from("ad_settings").select("config").eq("id",1).maybeSingle();
+ if(r.error){err(r.error);return}
+ var c=(r.data&&r.data.config)||{};
+ var h='<div class="box"><h3>বিজ্ঞাপনের কোড</h3><p class="muted">Adsterra থেকে পাওয়া কোড এখানে পেস্ট করে সেভ করুন, বাকি কাজ সাইট নিজে করবে (কোড বডিতে বসানোর দরকার নেই)। ফাঁকা রাখলে সেই জায়গায় বিজ্ঞাপন আসবে না। ব্যাজওয়ালারা কোনো বিজ্ঞাপন দেখবে না। শুধু বিশ্বস্ত নেটওয়ার্কের কোড দিন, কারণ এটা সবার ব্রাউজারে চলবে।</p><div class="form">';
+ ADF.forEach(function(x){h+='<label>'+x[1]+(x[2]?' <span class="muted">('+x[2]+')</span>':'')+'<textarea class="mono" id="ad_'+x[0]+'" rows="3">'+esc(c[x[0]]||"")+'</textarea></label>'});
+ h+='<h3 style="margin-top:8px">ডাউনলোড ধাপ ২</h3><label>এখানে কী দেখাবে<select id="ad_mode"><option value="video"'+(c.gate2_mode=="visit"?"":" selected")+'>ভিডিও বিজ্ঞাপন (কোড পেলে)</option><option value="visit"'+(c.gate2_mode=="visit"?" selected":"")+'>ঐচ্ছিক ওয়েবসাইট ভিজিট (ভিডিও কোড না পাওয়া পর্যন্ত)</option></select></label>'+
+ '<label>ভিডিও বিজ্ঞাপনের কোড<textarea class="mono" id="ad_gate2_code" rows="3">'+esc(c.gate2_code||"")+'</textarea></label>'+
+ '<label>ওয়েবসাইট ভিজিট: শিরোনাম<input type="text" id="ad_vt" maxlength="80" value="'+esc(c.visit_title||"")+'"></label>'+
+ '<label>ওয়েবসাইট ভিজিট: ছোট লেখা<input type="text" id="ad_vx" maxlength="160" value="'+esc(c.visit_text||"")+'"></label>'+
+ '<label>ওয়েবসাইট ভিজিট: লিংক (https://...)<input type="url" id="ad_vu" value="'+esc(c.visit_url||"")+'"></label>'+
+ '<label>ওয়েবসাইট ভিজিট: বাটনের লেখা<input type="text" id="ad_vb" maxlength="40" value="'+esc(c.visit_btn||"")+'"></label>'+
+ '<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="ad_preview"'+(c.preview===false?"":" checked")+'> কোড ফাঁকা জায়গায় "বিজ্ঞাপনের জায়গা" বক্স দেখান (সাইট আসলে চালু হলে বন্ধ করুন)</label>'+
+ '<button class="btn p" id="adsave">সেভ করুন</button></div></div>';
+ $("panel").innerHTML=h;
+ $("adsave").onclick=async function(){
+  var n={preview:$("ad_preview").checked,gate2_mode:$("ad_mode").value,gate2_code:$("ad_gate2_code").value.trim(),visit_title:$("ad_vt").value.trim(),visit_text:$("ad_vx").value.trim(),visit_url:$("ad_vu").value.trim(),visit_btn:$("ad_vb").value.trim()};
+  ADF.forEach(function(x){n[x[0]]=$("ad_"+x[0]).value.trim()});
+  if(n.visit_url&&!/^https?:\/\//i.test(n.visit_url)){note("ওয়েবসাইটের লিংক https:// দিয়ে শুরু হতে হবে");return}
+  this.disabled=true;
+  var w=await db.from("ad_settings").upsert({id:1,config:n,updated_at:new Date().toISOString()});
+  this.disabled=false;
+  if(w.error)err(w.error);else note("সেভ হয়েছে। সাইটে রিফ্রেশ করলে দেখা যাবে।");
+ };
+}
 document.addEventListener("click",async function(e){
  var t=e.target.closest("[data-p]");if(t){show(t.dataset.p);return}
  var b=e.target.closest("[data-a]");if(!b)return;

@@ -113,6 +113,7 @@ function form(){
  '<label>মেইন ছবি * (বড় করে প্রথমে দেখাবে, PNG/JPG/WEBP, সর্বোচ্চ '+MAXMB+' MB)<input type="file" id="mf" accept="image/png,image/jpeg,image/webp"></label>'+
  '<label>প্রিভিউ ছবি (একসাথে একাধিক বাছুন, সর্বোচ্চ '+MAXP+'টি)<input type="file" id="mp" accept="image/png,image/jpeg,image/webp" multiple></label>'+
  '<div class="two"><label>গেম ভার্সন (ঐচ্ছিক)<input type="text" id="v" maxlength="40" placeholder="যেমন BUSSID v4.3"></label><label>মূল নির্মাতার নাম (ঐচ্ছিক)<input type="text" id="n" maxlength="80"></label></div>'+
+ '<label>YouTube প্রিভিউ ভিডিও লিংক (ঐচ্ছিক)<input type="url" id="vd" placeholder="https://www.youtube.com/watch?v=..."></label>'+
  '<label>কীভাবে ইনস্টল করবেন (ঐচ্ছিক)<textarea id="i" rows="3" maxlength="1500"></textarea></label>'+
  '<label>আপনার Facebook লিংক (ঐচ্ছিক)<input type="url" id="sf" placeholder="https://"></label>'+
  '<label>আপনার YouTube লিংক (ঐচ্ছিক)<input type="url" id="sy" placeholder="https://"></label>'+
@@ -131,13 +132,15 @@ async function send(){
  if(!link||!okLink(link)){note("সঠিক ডাউনলোড লিংক দিন (https:// দিয়ে শুরু)");return}
  var soc=[$("sf").value.trim(),$("sy").value.trim(),$("st").value.trim()];
  if(!soc.every(okLink)){note("সোশ্যাল লিংক https:// দিয়ে শুরু হতে হবে");return}
+ var vd=$("vd").value.trim();
+ if(vd&&!/^https?:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//i.test(vd)){note("ভিডিও লিংক YouTube-এর হতে হবে");return}
  var big=[mf].concat(pf).some(function(f){return f.size>MAXMB*1048576});
  if(big){note("প্রতিটি ছবি "+MAXMB+" MB-এর কম হতে হবে");return}
  var b=$("send");b.disabled=true;$("msg").textContent="ছবি আপলোড হচ্ছে, একটু অপেক্ষা করুন...";
  try{
   var cover=await up(mf),pv=[];
   for(var i=0;i<pf.length;i++)pv.push(await up(pf[i]));
-  var r=await db.from("mods").insert({game_id:+$("g").value,category_id:cat,title:t,description:$("d").value.trim()||null,cover_url:cover,previews:pv,game_version:$("v").value.trim()||null,install_steps:$("i").value.trim()||null,credit_name:$("n").value.trim()||null,social_facebook:soc[0]||null,social_youtube:soc[1]||null,social_telegram:soc[2]||null,alt_link:link,uploader_id:ME.id,status:"pending"});
+  var r=await db.from("mods").insert({game_id:+$("g").value,category_id:cat,title:t,description:$("d").value.trim()||null,cover_url:cover,previews:pv,game_version:$("v").value.trim()||null,install_steps:$("i").value.trim()||null,credit_name:$("n").value.trim()||null,social_facebook:soc[0]||null,social_youtube:soc[1]||null,social_telegram:soc[2]||null,alt_link:link,video_url:vd||null,uploader_id:ME.id,status:"pending"});
   if(r.error)throw r.error;
   note("জমা হয়েছে! অ্যাপ্রুভের পর সাইটে আসবে।");form();mine();window.scrollTo({top:0,behavior:"smooth"});
  }catch(e){

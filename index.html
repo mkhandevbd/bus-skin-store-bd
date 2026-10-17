@@ -101,6 +101,8 @@ a.btn{text-decoration:none;display:block;text-align:center}
 .owner{box-shadow:0 0 8px rgba(217,45,63,.7)}.moderator{box-shadow:0 0 8px rgba(37,99,235,.6)}.premium{box-shadow:0 0 8px rgba(183,121,31,.7)}.vip{box-shadow:0 0 8px rgba(124,58,237,.7)}
 .th{text-decoration:none}
 @media (prefers-reduced-motion:reduce){.card{animation:none}.badge::after{animation:none}}
+.adslot{display:flex;justify-content:center;margin:14px 0}
+.adph{display:grid;place-items:center;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;background:var(--card)}
 </style>
 </head>
 <body>
@@ -116,6 +118,7 @@ a.btn{text-decoration:none;display:block;text-align:center}
 </div></header>
 
 <main class="wrap">
+  <div class="adslot" data-ad="top"></div>
   <div class="hero">
     <div>
       <h1>বাস স্কিন, বাস মড ডাউনলোড করুন <em>খুব সহজে</em></h1>
@@ -126,12 +129,16 @@ a.btn{text-decoration:none;display:block;text-align:center}
   </div>
   <div class="games" id="games" role="group" aria-label="গেম বাছাই"></div>
   <div class="tabs" id="tabs" role="tablist"></div>
-  <div id="out"></div>
+  <div id="o1"></div>
+  <div class="adslot" data-ad="mid"></div>
+  <div id="o2"></div>
+  <div class="adslot" data-ad="bottom"></div>
 </main>
 
 <footer><div class="wrap">© Bus Skin Store BD</div></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="ads.js"></script>
 <script src="config.js"></script>
 <script>
 var $=function(i){return document.getElementById(i)},
@@ -141,9 +148,9 @@ BADGE={owner:"Owner",moderator:"Moderator",premium:"Premium",vip:"VIP"},db;
 
 function skel(){
  var c='<div class="card"><div class="th sk"></div><div class="body"><div class="sk l1"></div><div class="sk l2"></div><div class="sk l3"></div></div></div>';
- $("out").innerHTML='<section><div class="sk l1" style="height:24px;width:200px;margin-bottom:12px"></div><div class="grid">'+c+c+c+c+'</div></section>';
+ $("o1").innerHTML="";$("o2").innerHTML='<section><div class="sk l1" style="height:24px;width:200px;margin-bottom:12px"></div><div class="grid">'+c+c+c+c+'</div></section>';
 }
-function fail(m){$("out").innerHTML='<div class="empty">'+esc(m)+'</div>'}
+function fail(m){$("o2").innerHTML='<div class="empty">'+esc(m)+'</div>'}
 function img(u,n){return u?'<img src="'+esc(u)+'" alt="'+esc(n)+'">':''}
 function isNew(m){return m.created_at&&Date.now()-new Date(m.created_at).getTime()<6048e5}
 function fmt(n){n=n||0;return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":String(n)}
@@ -168,14 +175,17 @@ function draw(){
  var h="";
  if(S.t=="all"&&!S.q){var nw=S.mods.slice().sort(byNew).slice(0,6);if(nw.length)h+=row("নতুন যোগ হয়েছে",nw)}
  else if(S.t!="all"&&S.mods.length)h+='<div class="sort"><button class="chip" aria-pressed="'+(S.sort=="pop")+'" data-s="pop">জনপ্রিয়</button><button class="chip" aria-pressed="'+(S.sort=="new")+'" data-s="new">নতুন</button></div>';
+ var ms=document.querySelector('.adslot[data-ad="mid"]');if(ms)ms.hidden=!S.mods.length;
+ $("o1").innerHTML=h;h="";
  S.cats.forEach(function(c){if(S.t=="all"||S.t==c.id)h+=sec(c)});
- $("out").innerHTML=h||'<div class="empty">'+(S.q?"কিছু পাওয়া যায়নি। অন্য শব্দে খুঁজুন।":"এখনো কোনো মড যোগ হয়নি, শীঘ্রই আসছে।")+'</div>';
+ $("o2").innerHTML=h||'<div class="empty">'+(S.q?"কিছু পাওয়া যায়নি। অন্য শব্দে খুঁজুন।":"এখনো কোনো মড যোগ হয়নি, শীঘ্রই আসছে।")+'</div>';
 }
 async function showMe(sess){
  var l=$("login"),m=$("me");
- if(!sess){l.hidden=false;m.hidden=true;return}
+ if(!sess){ADS.start("guest");l.hidden=false;m.hidden=true;return}
  var r=await db.from("profiles").select("display_name,avatar_url,role").eq("id",sess.user.id).single();
  var p=r.data||{display_name:"ইউজার",role:"user"};
+ ADS.start(p.role);
  var b=BADGE[p.role]?'<span class="badge '+esc(p.role)+'">'+BADGE[p.role]+'</span>':'';
  m.innerHTML=(p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'')+'<span class="n">'+esc(p.display_name)+'</span>'+b+'<button class="btn" id="logout">লগআউট</button>';
  l.hidden=true;m.hidden=false;
