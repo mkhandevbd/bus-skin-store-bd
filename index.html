@@ -84,13 +84,19 @@ h1 em{font-style:normal;color:var(--g)}
 .sort .chip{padding:3px 12px;font-size:14px}
 @media(max-width:640px){.bar{flex-wrap:wrap}.search{order:5;flex-basis:100%}.grid{grid-template-columns:repeat(2,1fr);gap:10px}.th{height:100px}}
 @media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
+.rgb,h1 em{background:linear-gradient(90deg,#ff2d55,#ff9500,#ffd60a,#30d158,#0a84ff,#bf5af2,#ff2d55);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:rgb 6s linear infinite}
+@keyframes rgb{to{background-position:300% 0}}
+.strip div{border-top:3px solid var(--y)}
+.strip .sk{width:96px;height:62px;padding:0;border-top:0}
+@media(max-width:640px){.logo span{display:inline}.logo{font-size:18px}}
+@media (prefers-reduced-motion:reduce){.rgb,h1 em{animation:none}}
 </style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="bus" viewBox="0 0 120 56"><rect x="4" y="6" width="112" height="38" rx="7" fill="var(--b)"/><rect x="4" y="30" width="112" height="7" fill="var(--s)"/><g fill="#dff3ff" opacity=".92"><rect x="12" y="12" width="16" height="14" rx="2"/><rect x="32" y="12" width="16" height="14" rx="2"/><rect x="52" y="12" width="16" height="14" rx="2"/><rect x="72" y="12" width="16" height="14" rx="2"/><rect x="94" y="12" width="16" height="20" rx="2"/></g><circle cx="30" cy="46" r="7" fill="#1a1d24"/><circle cx="92" cy="46" r="7" fill="#1a1d24"/><circle cx="30" cy="46" r="3" fill="#9aa4b4"/><circle cx="92" cy="46" r="3" fill="#9aa4b4"/></symbol></svg>
 
 <header><div class="wrap bar">
-  <div class="logo"><svg><use href="#bus"/></svg><span>Bus Skin Store BD</span></div>
+  <div class="logo"><svg><use href="#bus"/></svg><span class="rgb">Bus Skin Store BD</span></div>
   <input class="search" id="q" type="search" placeholder="মড, স্কিন বা ম্যাপ খুঁজুন" aria-label="সার্চ">
   <button class="btn" id="theme" aria-label="থিম বদলান">🌓 থিম</button>
   <button class="btn p" id="login">গুগল দিয়ে লগইন</button>
@@ -100,9 +106,9 @@ h1 em{font-style:normal;color:var(--g)}
 <main class="wrap">
   <div class="hero">
     <div>
-      <h1>বাস স্কিন, মড আর ম্যাপ <em>এক জায়গায়</em></h1>
+      <h1>বাস স্কিন, বাস মড ডাউনলোড করুন <em>খুব সহজে</em></h1>
       <p class="sub">বাস সিমুলেটর ইন্দোনেশিয়া ও অন্য সিমুলেটর গেমের মড সরাসরি ডাউনলোড করুন।</p>
-      <div class="strip" id="strip"></div>
+      <div class="strip" id="strip"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
     </div>
     <div class="road"><svg viewBox="0 0 120 56" role="img" aria-label="বাসের ছবি"><use href="#bus"/></svg></div>
   </div>
@@ -146,8 +152,7 @@ function sec(c){
 function draw(){
  $("games").innerHTML=S.games.map(function(g){return '<button class="chip" aria-pressed="'+(g.id==S.g)+'" data-g="'+g.id+'">'+img(g.image_url,g.name)+esc(g.name)+'</button>'}).join("");
  $("tabs").innerHTML='<button class="tab" role="tab" aria-selected="'+(S.t=="all")+'" data-t="all">সব</button>'+S.cats.map(function(c){return '<button class="tab" role="tab" aria-selected="'+(S.t==c.id)+'" data-t="'+c.id+'">'+img(c.image_url,c.name)+esc(c.name)+'</button>'}).join("");
- var tot=S.mods.reduce(function(a,m){return a+(m.downloads||0)},0);
- $("strip").innerHTML='<div><b>'+S.mods.length+'</b><span>মড</span></div><div><b>'+fmt(tot)+'</b><span>ডাউনলোড</span></div><div><b>'+S.cats.length+'</b><span>ক্যাটাগরি</span></div>';
+ drawStrip();
  var h="";
  if(S.t=="all"&&!S.q){var nw=S.mods.slice().sort(byNew).slice(0,6);if(nw.length)h+=row("নতুন যোগ হয়েছে",nw)}
  else if(S.t!="all"&&S.mods.length)h+='<div class="sort"><button class="chip" aria-pressed="'+(S.sort=="pop")+'" data-s="pop">জনপ্রিয়</button><button class="chip" aria-pressed="'+(S.sort=="new")+'" data-s="new">নতুন</button></div>';
@@ -168,6 +173,21 @@ function initAuth(){
  $("login").onclick=function(){db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin}})};
  db.auth.onAuthStateChange(function(ev,sess){setTimeout(function(){showMe(sess)},0)});
 }
+async function loadStats(){
+ var r=await Promise.all([db.from("categories").select("id,name,game_id"),db.from("mods").select("game_id,category_id,downloads").eq("status","approved").limit(5000)]);
+ if(r[0].error||r[1].error)return;
+ S.all={cats:r[0].data,mods:r[1].data};drawStrip();
+}
+function drawStrip(){
+ var A=S.all;if(!A)return;
+ var byName={},order=[],nameOf={},byGame={},tot=0;
+ A.cats.forEach(function(c){nameOf[c.id]=c.name;if(!(c.name in byName)){byName[c.name]=0;order.push(c.name)}});
+ A.mods.forEach(function(m){var n=nameOf[m.category_id];if(n!=null)byName[n]++;byGame[m.game_id]=(byGame[m.game_id]||0)+1;tot+=m.downloads||0});
+ var bx=order.slice(0,5).map(function(n){return [byName[n],n]})
+  .concat(S.games.slice(0,4).map(function(g){var t=/\(([^)]+)\)/.exec(g.name);return [byGame[g.id]||0,(t?t[1]:g.name)+" মড"]}))
+  .concat([[fmt(tot),"ডাউনলোড"]]);
+ $("strip").innerHTML=bx.map(function(x){return '<div><b>'+x[0]+'</b><span>'+esc(x[1])+'</span></div>'}).join("");
+}
 async function loadGame(){
  skel();
  var r=await Promise.all([
@@ -186,7 +206,7 @@ async function boot(){
  if(r.error){fail("ডেটা লোড করা যায়নি। config.js-এ Supabase URL ও কী ঠিক আছে কিনা দেখুন।");return}
  S.games=r.data;
  if(!S.games.length){fail("এখনো কোনো গেম যোগ হয়নি।");return}
- S.g=S.games[0].id;await loadGame();
+ S.g=S.games[0].id;loadStats();await loadGame();
 }
 document.addEventListener("click",function(e){
  var a=e.target.closest("[data-g]"),b=e.target.closest("[data-t]");
