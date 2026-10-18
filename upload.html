@@ -56,6 +56,24 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 .pv{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .pv img{width:90px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
 .pv.big img{width:200px;height:120px}
+.upov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;z-index:50;padding:16px;backdrop-filter:blur(3px)}
+.upcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;max-width:360px;width:100%;text-align:center;animation:pop .3s both}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.upcard h3{margin:4px 0}
+.ring{position:relative;width:130px;height:130px;margin:0 auto 12px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:9}
+.ring .rb{stroke:var(--chip)}
+.ring .rf{stroke:var(--g);stroke-linecap:round;transition:stroke-dashoffset .25s}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:26px}
+.ring.spin svg{animation:upspin 1.1s linear infinite}
+@keyframes upspin{from{transform:rotate(-90deg)}to{transform:rotate(270deg)}}
+.ring.ok .rf{stroke:#16a34a}.ring.bad .rf{stroke:var(--red)}.ring.bad b{color:var(--red)}
+.ck{stroke-dasharray:1;stroke-dashoffset:1;animation:draw .5s .1s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.upbar{height:8px;background:var(--chip);border-radius:99px;overflow:hidden;margin-top:12px}
+.upbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g),var(--y));transition:width .25s}
+@media (prefers-reduced-motion:reduce){.ring.spin svg{animation:none}.upcard{animation:none}}
 </style>
 </head>
 <body>
@@ -87,13 +105,21 @@ async function wurl(){
  WURL=((r.data&&r.data.worker_url)||"").replace(/\/+$/,"");
  return WURL;
 }
-async function wpost(path,file){
- var w=await wurl();if(!w)throw new Error("আপলোড সার্ভার এখনো চালু হয়নি, একটু পরে চেষ্টা করুন");
+async function wpost(path,file,onp,onsent){
+ var w=await wurl();if(!w)throw new Error("সার্ভারের লিংক সেট করা হয়নি");
  var s=(await db.auth.getSession()).data.session;if(!s)throw new Error("আবার লগইন করুন");
- var r=await fetch(w+path,{method:"POST",headers:{Authorization:"Bearer "+s.access_token,"Content-Type":file.type||"application/octet-stream","X-File-Name":encodeURIComponent(file.name)},body:file});
- var j={};try{j=await r.json()}catch(e){}
- if(!r.ok)throw new Error(j.error||"আপলোড ব্যর্থ হয়েছে");
- return j;
+ return new Promise(function(res,rej){
+  var x=new XMLHttpRequest();
+  x.open("POST",w+path);
+  x.setRequestHeader("Authorization","Bearer "+s.access_token);
+  x.setRequestHeader("Content-Type",file.type||"application/octet-stream");
+  x.setRequestHeader("X-File-Name",encodeURIComponent(file.name));
+  x.upload.onprogress=function(e){if(onp&&e.lengthComputable)onp(e.loaded/e.total)};
+  x.upload.onload=function(){if(onsent)onsent()};
+  x.onload=function(){var j={};try{j=JSON.parse(x.responseText)}catch(e){}if(x.status>=200&&x.status<300)res(j);else rej(new Error(j.error||"আপলোড ব্যর্থ হয়েছে"))};
+  x.onerror=function(){rej(new Error("নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন"))};
+  x.send(file);
+ });
 }
 async function up(file){return (await wpost("/img",file)).url}
 function loginBox(){
@@ -157,6 +183,19 @@ function fileInfo(inp,box){
   b.textContent=f.name+" · "+mb.toFixed(1)+" MB"+(mb>20?" (২০ MB-এর বেশি, তাই Google Drive লিংক দিন)":"");
  });
 }
+function upUI(){
+ var o=document.createElement("div");o.className="upov";
+ o.innerHTML='<div class="upcard"><div class="ring" id="upr"><svg viewBox="0 0 120 120"><circle class="rb" cx="60" cy="60" r="52"/><circle class="rf" id="upf" cx="60" cy="60" r="52"/></svg><b id="upp">0%</b></div><h3 id="upt">আপলোড হচ্ছে...</h3><p class="muted" id="ups"></p><div class="upbar"><i id="upb"></i></div><button class="btn p" id="upc" hidden style="margin-top:14px">ঠিক আছে</button></div>';
+ document.body.appendChild(o);
+ var C=2*Math.PI*52,f=$("upf"),r=$("upr");
+ f.style.strokeDasharray=C;f.style.strokeDashoffset=C;
+ return {
+  set:function(p,t){p=Math.max(0,Math.min(1,p));r.classList.remove("spin");f.style.strokeDashoffset=C*(1-p);$("upp").textContent=Math.round(p*100)+"%";$("upb").style.width=(p*100)+"%";if(t)$("ups").textContent=t},
+  spin:function(t){r.classList.add("spin");if(t)$("ups").textContent=t},
+  done:function(title,t,cb){r.classList.remove("spin");r.classList.add("ok");f.style.strokeDashoffset=0;$("upb").style.width="100%";$("upp").innerHTML='<svg viewBox="0 0 24 24" width="58" height="58"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="ck"/></svg>';$("upt").textContent=title;$("ups").textContent=t||"";var c=$("upc");c.hidden=false;c.onclick=function(){o.remove();if(cb)cb()}},
+  fail:function(t,cb){r.classList.remove("spin");r.classList.add("bad");$("upp").textContent="✖";$("upt").textContent="আপলোড হয়নি";$("ups").textContent=t||"";var c=$("upc");c.hidden=false;c.textContent="বন্ধ করুন";c.onclick=function(){o.remove();if(cb)cb()}}
+ };
+}
 async function send(){
  var t=$("t").value.trim(),cat=+$("c").value,dl=$("l").value.trim(),fl=$("fl").files[0],mf=$("mf").files[0],pf=[].slice.call($("mp").files).slice(0,MAXP);
  if(!t||!cat){note("মডের নাম ও ক্যাটাগরি দিন");return}
@@ -171,20 +210,27 @@ async function send(){
  if(vd&&!/^https?:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//i.test(vd)){note("ভিডিও লিংক YouTube-এর হতে হবে");return}
  var big=[mf].concat(pf).some(function(f){return f.size>MAXMB*1048576});
  if(big){note("প্রতিটি ছবি "+MAXMB+" MB-এর কম হতে হবে");return}
- var b=$("send");b.disabled=true;$("msg").textContent="ছবি আপলোড হচ্ছে, একটু অপেক্ষা করুন...";
+ var b=$("send");b.disabled=true;
+ var items=[{f:mf}].concat(pf.map(function(f){return {f:f}})),total=items.reduce(function(a,x){return a+x.f.size},0)+(fl?fl.size:0)||1,done=0,ui=upUI();
+ async function run(file,path,label,srv){
+  ui.set(done/total*.96,label);
+  var j=await wpost(path,file,function(p){ui.set((done+p*file.size)/total*.96,label)},function(){ui.spin(srv||label)});
+  done+=file.size;return j;
+ }
  try{
-  var cover=await up(mf),pv=[];
-  for(var i=0;i<pf.length;i++)pv.push(await up(pf[i]));
+  var cover=(await run(mf,"/img","মেইন ছবি আপলোড হচ্ছে...")).url,pv=[];
+  for(var i=0;i<pf.length;i++)pv.push((await run(pf[i],"/img","প্রিভিউ ছবি "+(i+1)+"/"+pf.length+" আপলোড হচ্ছে...")).url);
   var fj=null;
-  if(fl){$("msg").textContent="ফাইল আপলোড হচ্ছে, একটু অপেক্ষা করুন...";fj=await wpost("/file",fl)}
+  if(fl)fj=await run(fl,"/file","মডের ফাইল আপলোড হচ্ছে ("+(fl.size/1048576).toFixed(1)+" MB)...","Telegram-এ ফাইল সংরক্ষণ হচ্ছে, একটু অপেক্ষা করুন...");
+  ui.set(.97,"তথ্য সংরক্ষণ হচ্ছে...");ui.spin("তথ্য সংরক্ষণ হচ্ছে...");
   var r=await db.from("mods").insert({game_id:+$("g").value,category_id:cat,title:t,description:$("d").value.trim()||null,cover_url:cover,previews:pv,game_version:$("v").value.trim()||null,install_steps:$("i").value.trim()||null,credit_name:$("n").value.trim()||null,social_facebook:soc[0]||null,social_youtube:soc[1]||null,social_telegram:soc[2]||null,video_url:vd||null,dl_kind:fl?"tg":"drive",file_size:fl?fl.size:null,uploader_id:ME.id,status:"pending"}).select("id").single();
   if(r.error)throw r.error;
   var r2=await db.from("mod_secrets").insert(fl?{mod_id:r.data.id,tg_bot_id:fj.bot_id,tg_file_id:fj.file_id,file_name:fj.name}:{mod_id:r.data.id,drive_link:dl});
   if(r2.error){await db.from("mods").delete().eq("id",r.data.id);throw r2.error}
-  note("জমা হয়েছে! অ্যাপ্রুভের পর সাইটে আসবে।");form();mine();window.scrollTo({top:0,behavior:"smooth"});
+  ui.done("জমা হয়েছে! ✨","মডারেটর দেখে অ্যাপ্রুভ করলে সাইটে আসবে।",function(){form();mine();window.scrollTo({top:0,behavior:"smooth"})});
  }catch(e){
-  b.disabled=false;$("msg").textContent="";
-  note(/row-level|policy/i.test(e.message||"")?"জমা দেওয়া যায়নি। একসাথে ৫টির বেশি অপেক্ষমাণ থাকলে নতুন দেওয়া যায় না।":"সমস্যা: "+(e.message||e));
+  b.disabled=false;
+  ui.fail(/row-level|policy/i.test(e.message||"")?"জমা দেওয়া যায়নি। একসাথে ৫টির বেশি অপেক্ষমাণ থাকলে নতুন দেওয়া যায় না।":(e.message||String(e)));
  }
 }
 async function mine(){
