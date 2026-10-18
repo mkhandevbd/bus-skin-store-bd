@@ -98,6 +98,11 @@ footer{border-top:1px solid var(--line);margin-top:36px;padding:20px 0;color:var
 .lbx{top:14px;right:14px}.lbn{top:50%;left:12px;transform:translateY(-50%)}.lbn.r{left:auto;right:12px}
 .lbx:hover,.lbn:hover{background:rgba(255,255,255,.28)}
 .lbi{position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#fff;font-size:14px}
+.soc{position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}
+.soc:hover{transform:translateY(-2px) scale(1.06)}
+.soc::after{content:"";position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent)}
+.soc:hover::after{transform:translateX(120%);transition:transform .6s}
+.facebook:hover{box-shadow:0 0 14px #1877f2}.youtube:hover{box-shadow:0 0 14px #e60000}.telegram:hover{box-shadow:0 0 14px #229ed9}
 </style>
 </head>
 <body>
@@ -133,7 +138,7 @@ function sz(b){return b?(b>=1073741824?(b/1073741824).toFixed(1)+" GB":Math.max(
 function dt(d){try{return new Date(d).toLocaleDateString("bn-BD",{day:"numeric",month:"long",year:"numeric"})}catch(e){return""}}
 function nl(t){return esc(t).replace(/\n/g,"<br>")}
 function badge(r){return BADGE[r]?'<span class="badge '+esc(r)+'">'+BADGE[r]+'</span>':""}
-function soc(m){return [["facebook","Facebook"],["youtube","YouTube"],["telegram","Telegram"]].map(function(x){var u=safe(m["social_"+x[0]]);return u?'<a class="soc '+x[0]+'" href="'+esc(u)+'" target="_blank" rel="noopener noreferrer">'+x[1]+'</a>':""}).join("")}
+function soc(m){return [["facebook","Facebook"],["youtube","YouTube"],["telegram","Telegram"]].map(function(x){var u=safe(m["social_"+x[0]])||safe((m.uploader||{})["social_"+x[0]]);return u?'<a class="soc '+x[0]+'" href="'+esc(u)+'" target="_blank" rel="noopener noreferrer">'+x[1]+'</a>':""}).join("")}
 function fail(t){$("page").innerHTML='<div class="empty">'+esc(t)+' <a href="index.html">হোমে ফিরুন</a></div>'}
 
 function ytId(u){var m=/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/))([\w-]{11})/.exec(u||"");return m?m[1]:""}
@@ -162,7 +167,7 @@ function render(){
  '<nav class="crumb"><a href="index.html">হোম</a> › '+esc(m.game?m.game.name:"")+' › '+esc(m.category?m.category.name:"")+'</nav>'+st+
  '<div class="layout"><div class="hero"><div class="big" id="big">'+(fresh?'<span class="tag">নতুন</span>':"")+big+'</div>'+th+'<h1>'+esc(m.title)+'</h1><div class="chips">'+chips+'</div></div>'+
  '<aside class="side"><div class="box" id="dl"></div>'+
- '<div class="box"><div class="au">'+(u.avatar_url?'<img src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'<img alt="">')+'<div><b>'+esc(u.display_name||"অজানা")+'</b> '+badge(u.role)+'<div class="muted">আপলোডার</div></div></div>'+(soc(m)?'<div class="socs">'+soc(m)+'</div>':'<div class="muted">কোনো সোশ্যাল লিংক নেই</div>')+'</div>'+
+ '<div class="box"><div class="au">'+(u.avatar_url?'<img src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'<img alt="">')+'<div><b><a href="profile.html?u='+esc(u.id||"")+'" style="color:inherit">'+esc(u.display_name||"অজানা")+'</a></b> '+badge(u.role)+'<div class="muted">আপলোডার</div></div></div>'+(soc(m)?'<div class="socs">'+soc(m)+'</div>':'<div class="muted">কোনো সোশ্যাল লিংক নেই</div>')+'</div>'+
  '<div class="box stats"><div><b id="sd">'+fmt(m.downloads)+'</b><span>ডাউনলোড</span></div><div><b>'+fmt(m.views)+'</b><span>ভিউ</span></div><div><b>'+sz(m.file_size)+'</b><span>সাইজ</span></div><div><b style="font-size:15px">'+esc(dt(m.created_at))+'</b><span>তারিখ</span></div></div>'+
  '<div class="adslot" data-ad="side"></div><div class="box"><h3>শেয়ার করুন</h3><div class="share"><a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href)+'">Facebook</a><a class="btn" target="_blank" rel="noopener noreferrer" href="https://t.me/share/url?url='+encodeURIComponent(location.href)+'&text='+encodeURIComponent(m.title)+'">Telegram</a><button class="btn" id="cp">লিংক কপি</button></div></div></aside>'+
  '<div class="rest">'+
@@ -263,11 +268,11 @@ async function init(){
  if(s){
   var p=await db.from("profiles").select("display_name,avatar_url,role").eq("id",s.user.id).single();
   if(p.data){role=p.data.role;$("login").hidden=true;
-   $("me").innerHTML=(p.data.avatar_url?'<img src="'+esc(p.data.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+badge(role)+'<button class="btn" id="lo">লগআউট</button>';$("me").hidden=false;
+   $("me").innerHTML=(p.data.avatar_url?'<img src="'+esc(p.data.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+badge(role)+'<a class="btn" href="profile.html">প্রোফাইল</a><button class="btn" id="lo">লগআউট</button>';$("me").hidden=false;
    $("lo").onclick=async function(){await db.auth.signOut();location.reload()}}
  }
  if(!id){fail("মড পাওয়া যায়নি।");return}
- var r=await db.from("mods").select("*,uploader:profiles!uploader_id(display_name,avatar_url,role),game:games(name),category:categories(name)").eq("id",id).maybeSingle();
+ var r=await db.from("mods").select("*,uploader:profiles!uploader_id(id,display_name,avatar_url,role,social_facebook,social_youtube,social_telegram),game:games(name),category:categories(name)").eq("id",id).maybeSingle();
  if(r.error||!r.data){fail("মড পাওয়া যায়নি।");return}
  ADS.start(role);M=r.data;render();
  try{var k="v"+id;if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,1);db.rpc("increment_views",{p_id:id})}}catch(e){}

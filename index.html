@@ -135,6 +135,18 @@ h1.fire::after{left:68%;width:5px;height:5px;background:#ff6a00;animation-delay:
 .chip img,.tab img{box-shadow:0 0 0 2px var(--y);animation:ring 2.4s infinite}
 @keyframes ring{50%{box-shadow:0 0 0 4px rgba(255,194,51,.35)}}
 @media (prefers-reduced-motion:reduce){h1.fire,h1.fire::before,h1.fire::after,.tagline em,.scr,.busfall i,.chip::after,.tab::after,.chip img,.tab img,.neon::after{animation:none!important}.scr{transform:none}}
+.un{display:inline-flex;align-items:center;gap:5px;color:var(--text);text-decoration:none;font-weight:600}.un:hover{color:var(--g)}
+.av{width:20px;height:20px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--y)}
+.meta{gap:6px}
+.sm{position:relative;overflow:hidden;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;color:#fff;font-size:12px;font-weight:700;text-decoration:none;transition:transform .15s,box-shadow .15s}
+.sm:hover{transform:translateY(-2px) scale(1.12)}
+.sm::after{content:"";position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);animation:smsh 4s infinite}
+.sm:hover::after{animation:smsh .7s}
+@keyframes smsh{to{transform:translateX(120%)}}
+.sm.f{background:#1877f2}.sm.f:hover{box-shadow:0 0 10px #1877f2}
+.sm.y{background:#e60000}.sm.y:hover{box-shadow:0 0 10px #e60000}
+.sm.t{background:#229ed9}.sm.t:hover{box-shadow:0 0 10px #229ed9}
+@media (prefers-reduced-motion:reduce){.sm::after{animation:none}}
 </style>
 </head>
 <body>
@@ -187,6 +199,7 @@ function skel(){
 }
 function fail(m){$("o2").innerHTML='<div class="empty">'+esc(m)+'</div>'}
 function img(u,n){return u?'<img src="'+esc(u)+'" alt="'+esc(n)+'">':''}
+function minisoc(u){return [["f","social_facebook","f","Facebook"],["y","social_youtube","▶","YouTube"],["t","social_telegram","✈","Telegram"]].map(function(x){var l=u[x[1]];return /^https?:\/\//i.test(l||"")?'<a class="sm '+x[0]+'" href="'+esc(l)+'" target="_blank" rel="noopener noreferrer" aria-label="'+x[3]+'" title="'+x[3]+'">'+x[2]+'</a>':""}).join("")}
 function isNew(m){return m.created_at&&Date.now()-new Date(m.created_at).getTime()<6048e5}
 function fmt(n){n=n||0;return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":String(n)}
 function byNew(a,b){return new Date(b.created_at)-new Date(a.created_at)}
@@ -194,7 +207,7 @@ function card(m){
  var u=m.uploader||{},b=BADGE[u.role]?'<span class="badge '+esc(u.role)+'">'+BADGE[u.role]+'</span>':'',
  c=S.cats.find(function(x){return x.id==m.category_id}),
  th=m.cover_url?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="'+esc(m.title)+'">':'<svg><use href="#bus"/></svg>';
- return '<article class="card"><a class="th" href="mod.html?id='+m.id+'">'+(isNew(m)?'<span class="tag">নতুন</span>':'')+th+'</a><div class="body"><div class="cat">'+esc(c?c.name:"")+'</div><a class="t" href="mod.html?id='+m.id+'">'+esc(m.title)+'</a><div class="meta">'+esc(u.display_name||"অজানা")+' '+b+'</div><div class="dl">⬇ '+fmt(m.downloads)+' ডাউনলোড</div><div class="acts"><a class="btn p" href="mod.html?id='+m.id+'">ডাউনলোড</a></div></div></article>';
+ return '<article class="card"><a class="th" href="mod.html?id='+m.id+'">'+(isNew(m)?'<span class="tag">নতুন</span>':'')+th+'</a><div class="body"><div class="cat">'+esc(c?c.name:"")+'</div><a class="t" href="mod.html?id='+m.id+'">'+esc(m.title)+'</a><div class="meta"><a class="un" href="profile.html?u='+esc(u.id||"")+'">'+(/^https?:\/\//i.test(u.avatar_url||"")?'<img class="av" src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+esc(u.display_name||"অজানা")+'</a> '+b+minisoc(u)+'</div><div class="dl">⬇ '+fmt(m.downloads)+' ডাউনলোড</div><div class="acts"><a class="btn p" href="mod.html?id='+m.id+'">ডাউনলোড</a></div></div></article>';
 }
 function row(title,L){return '<section><h2>'+title+'</h2><div class="grid">'+L.map(card).join("")+'</div></section>'}
 function sec(c){
@@ -222,7 +235,7 @@ async function showMe(sess){
  var p=r.data||{display_name:"ইউজার",role:"user"};
  ADS.start(p.role);
  var b=BADGE[p.role]?'<span class="badge '+esc(p.role)+'">'+BADGE[p.role]+'</span>':'';
- m.innerHTML=(p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'')+'<span class="n">'+esc(p.display_name)+'</span>'+b+'<button class="btn" id="logout">লগআউট</button>';
+ m.innerHTML=(p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'')+'<span class="n">'+esc(p.display_name)+'</span>'+b+'<a class="btn" href="profile.html">প্রোফাইল</a><button class="btn" id="logout">লগআউট</button>';
  l.hidden=true;m.hidden=false;
  $("logout").onclick=function(){db.auth.signOut()};
 }
@@ -260,7 +273,7 @@ async function loadGame(){
  skel();
  var r=await Promise.all([
   db.from("categories").select("id,name,image_url").eq("game_id",S.g).order("sort_order"),
-  db.from("mods").select("id,title,cover_url,downloads,created_at,category_id,uploader:profiles!uploader_id(display_name,role)").eq("game_id",S.g).eq("status","approved").order("downloads",{ascending:false}).limit(200)
+  db.from("mods").select("id,title,cover_url,downloads,created_at,category_id,uploader:profiles!uploader_id(id,display_name,avatar_url,role,social_facebook,social_youtube,social_telegram)").eq("game_id",S.g).eq("status","approved").order("downloads",{ascending:false}).limit(200)
  ]);
  if(r[0].error||r[1].error){fail("ডেটা লোড করা যায়নি। config.js-এ Supabase URL ও কী ঠিক আছে কিনা দেখুন।");return}
  S.cats=r[0].data;S.mods=r[1].data;S.t="all";draw();

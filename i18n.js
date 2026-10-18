@@ -6,7 +6,7 @@
     "ডাউনলোড": "Download", "ডাউনলোড করুন": "Download", "জনপ্রিয়": "Popular",
     "বাস স্কিন": "Bus Skin", "বাস মড": "Bus Mod", "ম্যাপ মড": "Map Mod",
     "ভিউ": "Views", "সাইজ": "Size", "তারিখ": "Date", "বিবরণ": "Description", "ক্রেডিট": "Credit",
-    "আপলোডার": "Uploader", "হোম": "Home", "অজানা": "Unknown", "অন্য লিংক": "Other link",
+    "আপলোডার": "Uploader", "প্রোফাইল": "Profile", "যোগ দিয়েছেন": "Joined", "হোম": "Home", "অজানা": "Unknown", "অন্য লিংক": "Other link",
     "নতুন যোগ হয়েছে": "Newly added", "ঠিক আছে": "OK", "বন্ধ করুন": "Close", "মুছুন": "Delete"
   };
   var S = [

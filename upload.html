@@ -134,10 +134,10 @@ async function init(){
  db.from("site_settings").select("logo_url").eq("id",1).maybeSingle().then(function(r){var u=r.data&&r.data.logo_url;if(/^https?:\/\//i.test(u||"")){var sv=$("logo").querySelector("svg");if(sv)sv.outerHTML='<img class="logoimg" src="'+esc(u)+'" alt="">'}});
  var s=(await db.auth.getSession()).data.session;
  if(!s){loginBox();return}
- var p=await db.from("profiles").select("id,display_name,avatar_url,role").eq("id",s.user.id).single();
+ var p=await db.from("profiles").select("id,display_name,avatar_url,role,social_facebook,social_youtube,social_telegram").eq("id",s.user.id).single();
  if(p.error||!p.data){$("app").innerHTML='<div class="empty">প্রোফাইল পাওয়া যায়নি। লগআউট করে আবার লগইন করুন।</div>';return}
  ME=p.data;
- $("me").innerHTML=(ME.avatar_url?'<img src="'+esc(ME.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+badge(ME.role)+'<button class="btn" id="lo">লগআউট</button>';$("me").hidden=false;
+ $("me").innerHTML=(ME.avatar_url?'<img src="'+esc(ME.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+badge(ME.role)+'<a class="btn" href="profile.html">প্রোফাইল</a><button class="btn" id="lo">লগআউট</button>';$("me").hidden=false;
  $("lo").onclick=async function(){await db.auth.signOut();location.reload()};
  var r=await Promise.all([db.from("games").select("id,name").eq("active",true).order("sort_order"),db.from("categories").select("id,name,game_id").order("sort_order")]);
  G=r[0].data||[];C=r[1].data||[];
@@ -167,6 +167,7 @@ function form(){
  $("g").onchange=fill;fill();
  $("send").onclick=send;
  prev("mf","pvm",1);prev("mp","pvp",MAXP);fileInfo("fl","fi");
+ $("sf").value=ME.social_facebook||"";$("sy").value=ME.social_youtube||"";$("st").value=ME.social_telegram||"";
 }
 function prev(inp,box,max){
  var el=$(inp),b=$(box);if(!el||!b)return;

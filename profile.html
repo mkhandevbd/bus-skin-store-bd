@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>প্রোফাইল – Bus Skin Store BD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f3f6;--card:#fff;--text:#14181f;--muted:#5b6574;--line:#dfe3ea;--g:#0a7d5a;--gtext:#fff;--y:#ffc233;--chip:#e6eaf0;--red:#d92d3f;--sh:rgba(255,255,255,.6)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1218;--card:#171c25;--text:#eef1f6;--muted:#9aa4b4;--line:#262d3a;--g:#18b784;--gtext:#04120d;--chip:#212835;--sh:rgba(255,255,255,.12)}}
+:root[data-theme="dark"]{--bg:#0e1218;--card:#171c25;--text:#eef1f6;--muted:#9aa4b4;--line:#262d3a;--g:#18b784;--gtext:#04120d;--chip:#212835;--sh:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Hind Siliguri",system-ui,"Segoe UI",sans-serif;line-height:1.55}
+button,input,textarea{font:inherit;color:inherit}
+a{color:var(--g)}
+:focus-visible{outline:2px solid var(--g);outline-offset:2px}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:10px;padding:10px 16px;max-width:1120px;margin:0 auto}
+.logo{flex:1;display:flex;align-items:center;gap:8px;font-weight:700;font-size:20px;text-decoration:none;color:var(--text)}
+.logo svg{width:34px;height:18px;--b:var(--g);--s:var(--y)}
+.logoimg{height:34px;width:auto;max-width:130px;object-fit:contain}
+.rgb{background:linear-gradient(90deg,#ff2d55,#ff9500,#ffd60a,#30d158,#0a84ff,#bf5af2,#ff2d55);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:rgb 6s linear infinite}
+@keyframes rgb{to{background-position:300% 0}}
+.btn{position:relative;overflow:hidden;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 14px;cursor:pointer;font-weight:600;white-space:nowrap;text-decoration:none;color:var(--text);display:inline-block}
+.btn.p{background:var(--g);color:var(--gtext);border-color:var(--g)}
+.btn.p::after{content:"";position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent)}
+.btn.p:hover::after{transform:translateX(120%);transition:transform .6s}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.me{display:flex;align-items:center;gap:8px}.me img{width:30px;height:30px;border-radius:50%}
+.badge{position:relative;overflow:hidden;font-size:11px;font-weight:700;border-radius:6px;padding:0 6px;line-height:18px;color:#fff;vertical-align:middle}
+.owner{background:#d92d3f;box-shadow:0 0 8px rgba(217,45,63,.7)}.moderator{background:#2563eb;box-shadow:0 0 8px rgba(37,99,235,.6)}.premium{background:#b7791f;box-shadow:0 0 8px rgba(183,121,31,.7)}.vip{background:#7c3aed;box-shadow:0 0 8px rgba(124,58,237,.7)}
+.badge::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:sh 2.4s infinite}
+@keyframes sh{to{transform:translateX(100%)}}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:16px 0;animation:fi .45s both}
+.box h2{margin:0 0 12px;font-size:18px}
+.pf{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.avr{position:relative;width:108px;height:108px;flex:0 0 auto}
+.avr::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(#ff2d55,#ffd60a,#30d158,#0a84ff,#bf5af2,#ff2d55);animation:spin 5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.avr img,.avr .ph{position:absolute;inset:5px;width:calc(100% - 10px);height:calc(100% - 10px);border-radius:50%;object-fit:cover;border:4px solid var(--card);background:var(--chip)}
+.nm{font-size:26px;font-weight:700;line-height:1.2}
+.bio{color:var(--muted);margin:6px 0;overflow-wrap:anywhere;max-width:60ch}
+.socs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.soc{position:relative;overflow:hidden;color:#fff;text-decoration:none;border-radius:10px;padding:5px 14px;font-weight:600;transition:transform .15s,box-shadow .15s}
+.soc:hover{transform:translateY(-2px) scale(1.04)}
+.soc::after{content:"";position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent)}
+.soc:hover::after{transform:translateX(120%);transition:transform .6s}
+.facebook{background:#1877f2}.facebook:hover{box-shadow:0 0 14px #1877f2}
+.youtube{background:#e60000}.youtube:hover{box-shadow:0 0 14px #e60000}
+.telegram{background:#229ed9}.telegram:hover{box-shadow:0 0 14px #229ed9}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.stats div{background:var(--bg);border:1px solid var(--line);border-top:3px solid var(--y);border-radius:12px;padding:6px 16px;min-width:90px}
+.stats b{display:block;font-size:20px;line-height:1.2}.stats span{font-size:13px;color:var(--muted)}
+.form{display:grid;gap:12px;max-width:520px}
+label{display:grid;gap:4px;font-weight:600;font-size:14px}
+input[type=text],input[type=url],textarea{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 10px;width:100%}
+.prev img{width:70px;height:70px;border-radius:50%;object-fit:cover;border:1px solid var(--line);margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.rc{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--text);transition:transform .15s,box-shadow .15s;animation:fi .45s both;position:relative}
+.rc:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.rc .rt{height:100px;background:var(--chip);display:grid;place-items:center}.rc img{width:100%;height:100%;object-fit:cover}
+.rc div.rb{padding:10px;font-weight:600;line-height:1.3}.rc small{display:block;color:var(--muted);font-weight:400}
+.pill{position:absolute;top:8px;left:8px;font-size:12px;font-weight:700;border-radius:6px;padding:0 8px;line-height:20px;color:#fff;background:#b7791f}
+.pill.rejected{background:#d92d3f}.pill.approved{background:#0a7d5a}
+.muted{color:var(--muted);font-size:14px}
+.empty{padding:30px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#14181f;color:#fff;padding:10px 16px;border-radius:10px;z-index:20;max-width:90%}
+@media (prefers-reduced-motion:reduce){.rgb,.badge::after,.avr::before,.box,.rc{animation:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="bus" viewBox="0 0 120 56"><rect x="4" y="6" width="112" height="38" rx="7" fill="var(--b)"/><rect x="4" y="30" width="112" height="7" fill="var(--s)"/><g fill="#dff3ff" opacity=".92"><rect x="12" y="12" width="16" height="14" rx="2"/><rect x="32" y="12" width="16" height="14" rx="2"/><rect x="52" y="12" width="16" height="14" rx="2"/><rect x="72" y="12" width="16" height="14" rx="2"/><rect x="94" y="12" width="16" height="20" rx="2"/></g><circle cx="30" cy="46" r="7" fill="#1a1d24"/><circle cx="92" cy="46" r="7" fill="#1a1d24"/><circle cx="30" cy="46" r="3" fill="#9aa4b4"/><circle cx="92" cy="46" r="3" fill="#9aa4b4"/></symbol></svg>
+<header><div class="bar">
+  <a class="logo" id="logo" href="index.html"><svg><use href="#bus"/></svg><span class="rgb">Bus Skin Store BD</span></a>
+  <button class="btn" id="lang" aria-label="Language">EN</button>
+  <button class="btn" id="theme" aria-label="থিম বদলান">🌓</button>
+  <div class="me" id="me" hidden></div>
+</div></header>
+<main class="wrap" id="app"><div class="empty" style="margin-top:30px">লোড হচ্ছে...</div></main>
+<div id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+var $=function(i){return document.getElementById(i)},
+esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
+ok=function(u){return /^https?:\/\//i.test(u||"")},
+BADGE={owner:"Owner",moderator:"Moderator",premium:"Premium",vip:"VIP"},
+ST={pending:"অপেক্ষমাণ",rejected:"বাতিল"},
+COLS="id,display_name,avatar_url,role,bio,social_facebook,social_youtube,social_telegram,created_at",
+db,ME=null,T=null,MODS=[],WURL="";
+
+function note(t){var n=$("toast");n.textContent=t;n.hidden=false;clearTimeout(note.t);note.t=setTimeout(function(){n.hidden=true},4000)}
+function badge(r){return BADGE[r]?'<span class="badge '+esc(r)+'">'+BADGE[r]+'</span>':""}
+function fmt(n){n=n||0;return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":String(n)}
+function dt(d){try{return new Date(d).toLocaleDateString("bn-BD",{month:"long",year:"numeric"})}catch(e){return""}}
+function soc(p){return [["facebook","Facebook"],["youtube","YouTube"],["telegram","Telegram"]].map(function(x){var u=p["social_"+x[0]];return ok(u)?'<a class="soc '+x[0]+'" href="'+esc(u)+'" target="_blank" rel="noopener noreferrer">'+x[1]+'</a>':""}).join("")}
+async function wurl(){
+ if(WURL)return WURL;
+ var r=await db.from("site_settings").select("worker_url").eq("id",1).maybeSingle();
+ WURL=((r.data&&r.data.worker_url)||"").replace(/\/+$/,"");return WURL;
+}
+async function upAvatar(file){
+ var w=await wurl();if(!w)throw new Error("আপলোড সার্ভার এখনো চালু হয়নি");
+ var s=(await db.auth.getSession()).data.session;if(!s)throw new Error("আবার লগইন করুন");
+ var r=await fetch(w+"/img",{method:"POST",headers:{Authorization:"Bearer "+s.access_token,"Content-Type":file.type||"application/octet-stream","X-File-Name":encodeURIComponent(file.name)},body:file});
+ var j={};try{j=await r.json()}catch(e){}
+ if(!r.ok)throw new Error(j.error||"ছবি আপলোড হয়নি");return j.url;
+}
+function loginBox(){
+ $("app").innerHTML='<div class="box" style="max-width:420px;margin:40px auto;text-align:center"><h2>প্রোফাইল দেখতে লগইন করুন</h2><button class="btn p" id="gl">গুগল দিয়ে লগইন</button></div>';
+ $("gl").onclick=function(){db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname}})};
+}
+async function init(){
+ if(typeof SUPABASE_URL=="undefined"||SUPABASE_URL.indexOf("supabase.co")<0){$("app").innerHTML='<div class="empty">config.js-এ Supabase URL ও কী বসাতে হবে।</div>';return}
+ db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ db.from("site_settings").select("logo_url").eq("id",1).maybeSingle().then(function(r){var u=r.data&&r.data.logo_url;if(ok(u)){var sv=$("logo").querySelector("svg");if(sv)sv.outerHTML='<img class="logoimg" src="'+esc(u)+'" alt="">'}});
+ var s=(await db.auth.getSession()).data.session;
+ if(s){
+  var p=await db.from("profiles").select(COLS).eq("id",s.user.id).single();
+  if(p.data){ME=p.data;$("me").innerHTML=(ME.avatar_url?'<img src="'+esc(ME.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+badge(ME.role)+'<a class="btn" href="upload.html">আপলোড</a><button class="btn" id="lo">লগআউট</button>';$("me").hidden=false;$("lo").onclick=async function(){await db.auth.signOut();location.reload()}}
+ }
+ var id=new URLSearchParams(location.search).get("u")||(ME&&ME.id);
+ if(!id){loginBox();return}
+ if(ME&&ME.id==id)T=ME;
+ else{var r=await db.from("profiles").select(COLS).eq("id",id).maybeSingle();if(r.error||!r.data){$("app").innerHTML='<div class="empty" style="margin-top:30px">এই প্রোফাইল পাওয়া যায়নি। <a href="index.html">হোমে ফিরুন</a></div>';return}T=r.data}
+ var q=db.from("mods").select("id,title,cover_url,downloads,status,created_at").eq("uploader_id",id).order("created_at",{ascending:false}).limit(60);
+ if(!(ME&&ME.id==id))q=q.eq("status","approved");
+ var m=await q;MODS=m.data||[];
+ render();
+}
+function render(){
+ var own=ME&&T&&ME.id==T.id,ap=MODS.filter(function(m){return m.status=="approved"}),dl=ap.reduce(function(a,m){return a+(m.downloads||0)},0);
+ var h='<div class="box"><div class="pf"><div class="avr">'+(ok(T.avatar_url)?'<img src="'+esc(T.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'<div class="ph"></div>')+'</div><div><div class="nm">'+esc(T.display_name||"নামহীন")+' '+badge(T.role)+'</div>'+(T.bio?'<div class="bio">'+esc(T.bio).replace(/\n/g,"<br>")+'</div>':(own?'<div class="muted">নিজের সম্পর্কে কিছু লিখুন (নিচে এডিট করুন)</div>':""))+'<div class="socs">'+soc(T)+'</div><div class="stats"><div><b>'+ap.length+'</b><span>মড</span></div><div><b>'+fmt(dl)+'</b><span>ডাউনলোড</span></div><div><b style="font-size:15px">'+esc(dt(T.created_at))+'</b><span>যোগ দিয়েছেন</span></div></div></div></div></div>';
+ if(own)h+='<div class="box"><h2>প্রোফাইল এডিট করুন</h2><div class="form"><label>আপনার নাম<input type="text" id="pn" maxlength="60" value="'+esc(T.display_name||"")+'"></label><label>প্রোফাইল ছবি (PNG/JPG/WEBP, ৫ MB-এর কম)<input type="file" id="pa" accept="image/png,image/jpeg,image/webp"><div class="prev" id="pp"></div></label><label>পরিচিতি (সর্বোচ্চ ৩০০ অক্ষর)<textarea id="pb" rows="3" maxlength="300">'+esc(T.bio||"")+'</textarea></label><label>Facebook লিংক<input type="url" id="pf" placeholder="https://" value="'+esc(T.social_facebook||"")+'"></label><label>YouTube লিংক<input type="url" id="py" placeholder="https://" value="'+esc(T.social_youtube||"")+'"></label><label>Telegram লিংক<input type="url" id="pt" placeholder="https://" value="'+esc(T.social_telegram||"")+'"></label><button class="btn p" id="psave">সেভ করুন</button></div></div>';
+ h+='<div class="box"><h2>'+(own?"আমার মড":"মড")+'</h2>'+(MODS.length?'<div class="grid">'+MODS.map(function(m){return '<a class="rc" href="mod.html?id='+m.id+'">'+(m.status!="approved"?'<span class="pill '+esc(m.status)+'">'+esc(ST[m.status]||m.status)+'</span>':"")+'<div class="rt">'+(ok(m.cover_url)?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="">':'<svg style="width:60%;--b:var(--g);--s:var(--y)"><use href="#bus"/></svg>')+'</div><div class="rb">'+esc(m.title)+'<small>⬇ '+fmt(m.downloads)+'</small></div></a>'}).join("")+'</div>':'<div class="empty">এখনো কোনো মড নেই।</div>')+'</div>';
+ $("app").innerHTML=h;
+ document.title=(T.display_name||"প্রোফাইল")+" – Bus Skin Store BD";
+ if(own){
+  $("pa").onchange=function(){var f=this.files[0];$("pp").innerHTML=f?'<img src="'+URL.createObjectURL(f)+'" alt="">':""};
+  $("psave").onclick=save;
+ }
+}
+async function save(){
+ var n=$("pn").value.trim();if(!n){note("নাম লিখুন");return}
+ var s=[$("pf").value.trim(),$("py").value.trim(),$("pt").value.trim()];
+ if(!s.every(function(v){return !v||/^https:\/\//i.test(v)})){note("সোশ্যাল লিংক https:// দিয়ে শুরু হতে হবে");return}
+ var b=$("psave");b.disabled=true;b.textContent="সেভ হচ্ছে...";
+ try{
+  var av=ME.avatar_url,f=$("pa").files[0];
+  if(f){if(f.size>5*1048576)throw new Error("ছবি ৫ MB-এর কম হতে হবে");av=await upAvatar(f)}
+  var d={display_name:n,bio:$("pb").value.trim()||null,avatar_url:av,social_facebook:s[0]||null,social_youtube:s[1]||null,social_telegram:s[2]||null};
+  var r=await db.from("profiles").update(d).eq("id",ME.id);
+  if(r.error)throw r.error;
+  Object.assign(ME,d);T=ME;note("প্রোফাইল সেভ হয়েছে ✔");render();
+ }catch(e){note("সমস্যা: "+(e.message||e));b.disabled=false;b.textContent="সেভ করুন"}
+}
+var R=document.documentElement;
+try{var s0=localStorage.getItem("t");if(s0)R.dataset.theme=s0}catch(e){}
+$("theme").onclick=function(){var cur=R.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),n=cur=="dark"?"light":"dark";R.dataset.theme=n;try{localStorage.setItem("t",n)}catch(e){}};
+init();
+</script>
+<script src="i18n.js"></script>
+</body>
+</html>
