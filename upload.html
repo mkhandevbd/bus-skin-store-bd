@@ -53,6 +53,9 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 .empty{padding:30px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#14181f;color:#fff;padding:10px 16px;border-radius:10px;z-index:20;max-width:90%}
 @media (prefers-reduced-motion:reduce){.rgb,.badge::after,.box{animation:none}}
+.pv{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.pv img{width:90px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.pv.big img{width:200px;height:120px}
 </style>
 </head>
 <body>
@@ -119,21 +122,40 @@ function form(){
  '<div class="two"><label>গেম<select id="g">'+G.map(function(g){return '<option value="'+g.id+'">'+esc(g.name)+'</option>'}).join("")+'</select></label><label>ক্যাটাগরি<select id="c"></select></label></div>'+
  '<label>মডের নাম *<input type="text" id="t" maxlength="120"></label>'+
  '<label>বিবরণ<textarea id="d" rows="4" maxlength="1500"></textarea></label>'+
- '<label>মেইন ছবি * (বড় করে প্রথমে দেখাবে, PNG/JPG/WEBP, সর্বোচ্চ '+MAXMB+' MB)<input type="file" id="mf" accept="image/png,image/jpeg,image/webp"></label>'+
- '<label>প্রিভিউ ছবি (একসাথে একাধিক বাছুন, সর্বোচ্চ '+MAXP+'টি)<input type="file" id="mp" accept="image/png,image/jpeg,image/webp" multiple></label>'+
+ '<label>মেইন ছবি * (বড় করে প্রথমে দেখাবে, PNG/JPG/WEBP, সর্বোচ্চ '+MAXMB+' MB)<input type="file" id="mf" accept="image/png,image/jpeg,image/webp"><div class="pv big" id="pvm"></div></label>'+
+ '<label>প্রিভিউ ছবি (একসাথে একাধিক বাছুন, সর্বোচ্চ '+MAXP+'টি)<input type="file" id="mp" accept="image/png,image/jpeg,image/webp" multiple><div class="pv" id="pvp"></div></label>'+
  '<div class="two"><label>গেম ভার্সন (ঐচ্ছিক)<input type="text" id="v" maxlength="40" placeholder="যেমন BUSSID v4.3"></label><label>মূল নির্মাতার নাম (ঐচ্ছিক)<input type="text" id="n" maxlength="80"></label></div>'+
  '<label>YouTube প্রিভিউ ভিডিও লিংক (ঐচ্ছিক)<input type="url" id="vd" placeholder="https://www.youtube.com/watch?v=..."></label>'+
  '<label>কীভাবে ইনস্টল করবেন (ঐচ্ছিক)<textarea id="i" rows="3" maxlength="1500"></textarea></label>'+
  '<label>আপনার Facebook লিংক (ঐচ্ছিক)<input type="url" id="sf" placeholder="https://"></label>'+
  '<label>আপনার YouTube লিংক (ঐচ্ছিক)<input type="url" id="sy" placeholder="https://"></label>'+
  '<label>আপনার Telegram লিংক (ঐচ্ছিক)<input type="url" id="st" placeholder="https://"></label>'+
- '<label>মডের ফাইল * (সর্বোচ্চ ২০ MB, সরাসরি আপলোড)<input type="file" id="fl"></label>'+
+ '<label>মডের ফাইল * (সর্বোচ্চ ২০ MB, সরাসরি আপলোড)<input type="file" id="fl"><div class="muted" id="fi"></div></label>'+
  '<label>অথবা Google Drive লিংক (২০ MB-এর বেশি হলে)<input type="url" id="l" placeholder="https://drive.google.com/..."></label>'+
  '<button class="btn p" id="send">জমা দিন</button><div class="muted" id="msg"></div></div></div>'+
  '<div class="box"><h2>আমার আপলোড</h2><div id="mine" class="muted">লোড হচ্ছে...</div></div>';
  var fill=function(){$("c").innerHTML=C.filter(function(c){return c.game_id==$("g").value}).map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>'}).join("")};
  $("g").onchange=fill;fill();
  $("send").onclick=send;
+ prev("mf","pvm",1);prev("mp","pvp",MAXP);fileInfo("fl","fi");
+}
+function prev(inp,box,max){
+ var el=$(inp),b=$(box);if(!el||!b)return;
+ el.addEventListener("change",function(){
+  b.innerHTML="";
+  [].slice.call(el.files).slice(0,max).forEach(function(f){
+   if(!/^image\//.test(f.type))return;
+   var i=document.createElement("img");i.src=URL.createObjectURL(f);i.alt="";b.appendChild(i);
+  });
+ });
+}
+function fileInfo(inp,box){
+ var el=$(inp),b=$(box);if(!el||!b)return;
+ el.addEventListener("change",function(){
+  var f=el.files[0];if(!f){b.textContent="";return}
+  var mb=f.size/1048576;
+  b.textContent=f.name+" · "+mb.toFixed(1)+" MB"+(mb>20?" (২০ MB-এর বেশি, তাই Google Drive লিংক দিন)":"");
+ });
 }
 async function send(){
  var t=$("t").value.trim(),cat=+$("c").value,dl=$("l").value.trim(),fl=$("fl").files[0],mf=$("mf").files[0],pf=[].slice.call($("mp").files).slice(0,MAXP);

@@ -53,6 +53,9 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 .pill.owner::after,.pill.moderator::after,.pill.premium::after,.pill.vip::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:sh 2.4s infinite}
 @keyframes sh{to{transform:translateX(100%)}}
 .mono{font-family:ui-monospace,Consolas,monospace;font-size:13px}
+.pv{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.pv img{width:90px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.pv.big img{width:200px;height:120px}
 </style>
 </head>
 <body>
@@ -94,6 +97,24 @@ async function wpost(path,file){
  var j={};try{j=await r.json()}catch(e){}
  if(!r.ok)throw new Error(j.error||"আপলোড ব্যর্থ হয়েছে");
  return j;
+}
+function prev(inp,box,max){
+ var el=$(inp),b=$(box);if(!el||!b)return;
+ el.addEventListener("change",function(){
+  b.innerHTML="";
+  [].slice.call(el.files).slice(0,max).forEach(function(f){
+   if(!/^image\//.test(f.type))return;
+   var i=document.createElement("img");i.src=URL.createObjectURL(f);i.alt="";b.appendChild(i);
+  });
+ });
+}
+function fileInfo(inp,box){
+ var el=$(inp),b=$(box);if(!el||!b)return;
+ el.addEventListener("change",function(){
+  var f=el.files[0];if(!f){b.textContent="";return}
+  var mb=f.size/1048576;
+  b.textContent=f.name+" · "+mb.toFixed(1)+" MB"+(mb>20?" (২০ MB-এর বেশি, তাই Google Drive লিংক দিন)":"");
+ });
 }
 async function upImg(file){return (await wpost("/img",file)).url}
 async function loadBase(){
@@ -161,8 +182,8 @@ function pAdd(){
  '<label>ক্যাটাগরি<select id="mc"></select></label>'+
  '<label>নাম<input type="text" id="mt" maxlength="120"></label>'+
  '<label>বিবরণ<textarea id="md" rows="3" maxlength="1500"></textarea></label>'+
- '<label>মেইন ছবি (বড় করে প্রথমে দেখাবে, সর্বোচ্চ ৫ MB)<input type="file" id="mf" accept="image/png,image/jpeg,image/webp"></label>'+
- '<label>প্রিভিউ ছবি (একসাথে একাধিক বাছুন, সর্বোচ্চ ৮টি)<input type="file" id="mp" accept="image/png,image/jpeg,image/webp" multiple></label>'+
+ '<label>মেইন ছবি (বড় করে প্রথমে দেখাবে, সর্বোচ্চ ৫ MB)<input type="file" id="mf" accept="image/png,image/jpeg,image/webp"><div class="pv big" id="pvm"></div></label>'+
+ '<label>প্রিভিউ ছবি (একসাথে একাধিক বাছুন, সর্বোচ্চ ৮টি)<input type="file" id="mp" accept="image/png,image/jpeg,image/webp" multiple><div class="pv" id="pvp"></div></label>'+
  '<label>YouTube প্রিভিউ ভিডিও লিংক (ঐচ্ছিক)<input type="url" id="mvd" placeholder="https://www.youtube.com/watch?v=..."></label>'+
  '<label>গেম ভার্সন (ঐচ্ছিক, যেমন BUSSID v4.3)<input type="text" id="mv" maxlength="40"></label>'+
  '<label>কীভাবে ইনস্টল করবেন (ঐচ্ছিক)<textarea id="mi" rows="3" maxlength="1500"></textarea></label>'+
@@ -170,11 +191,12 @@ function pAdd(){
  '<label>লেখকের Facebook লিংক (ঐচ্ছিক)<input type="url" id="sf" placeholder="https://"></label>'+
  '<label>লেখকের YouTube লিংক (ঐচ্ছিক)<input type="url" id="sy" placeholder="https://"></label>'+
  '<label>লেখকের Telegram লিংক (ঐচ্ছিক)<input type="url" id="st" placeholder="https://"></label>'+
- '<label>মডের ফাইল (সর্বোচ্চ ২০ MB, Telegram-এ জমা হবে)<input type="file" id="mfile"></label>'+
+ '<label>মডের ফাইল (সর্বোচ্চ ২০ MB, Telegram-এ জমা হবে)<input type="file" id="mfile"><div class="muted" id="fi"></div></label>'+
  '<label>অথবা Google Drive লিংক (২০ MB-এর বেশি হলে)<input type="url" id="ml" placeholder="https://drive.google.com/..."></label>'+
  '<button class="btn p" id="ms">যোগ করুন</button><div class="muted" id="mm"></div></div></div>';
  var fill=function(){$("mc").innerHTML=C.filter(function(c){return c.game_id==$("mg").value}).map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>'}).join("")};
  $("mg").onchange=fill;fill();
+ prev("mf","pvm",1);prev("mp","pvp",8);fileInfo("mfile","fi");
  $("ms").onclick=async function(){
   var t=$("mt").value.trim(),cat=+$("mc").value,fl=$("mfile").files[0],dl=$("ml").value.trim(),mf=$("mf").files[0],b=this;
   if(!t||!cat){note("নাম ও ক্যাটাগরি দিন");return}
@@ -225,7 +247,7 @@ async function pSv(){
  var wu=(r[0].data&&r[0].data.worker_url)||"",mask=function(s){return esc(String(s).slice(0,6))+"••••"};
  var h='<div class="box"><h3>সার্ভারের লিংক (Cloudflare Worker)</h3><div class="inl"><label>লিংক (https://...)<input type="url" id="sv_w" value="'+esc(wu)+'" placeholder="https://bsstore-api.আপনার-নাম.workers.dev"></label><button class="btn p" data-sv="savew">সেভ</button></div></div>';
  h+='<div class="box"><h3>Telegram বট (মডের ফাইল রাখার জন্য)</h3><p class="muted">একাধিক বট দিলে যেটা কম ব্যবহার হয়েছে সেটাতে ফাইল যাবে। প্রতিটি বট তার চ্যানেলের অ্যাডমিন হতে হবে।</p>'+
- ((r[1].data||[]).map(function(b){return '<div class="row"><div class="grow"><b>'+esc(b.label)+'</b><div class="muted">টোকেন: '+mask(b.token)+' · চ্যানেল: '+esc(b.chat_id)+' · আপলোড: '+b.uploads+'</div></div><button class="btn" data-sv="togbot" data-id="'+b.id+'" data-v="'+(b.active?0:1)+'">'+(b.active?"বন্ধ করুন":"চালু করুন")+'</button><button class="btn d" data-sv="delbot" data-id="'+b.id+'">মুছুন</button></div>'}).join("")||'<div class="muted">এখনো কোনো বট নেই।</div>')+
+ ((r[1].data||[]).map(function(b){return '<div class="row"><div class="grow"><b>'+esc(b.label)+'</b><div class="muted">টোকেন: '+mask(b.token)+' · চ্যানেল: '+esc(b.chat_id)+' · আপলোড: '+b.uploads+'</div></div><button class="btn" data-sv="testbot" data-id="'+b.id+'">টেস্ট করুন</button><button class="btn" data-sv="togbot" data-id="'+b.id+'" data-v="'+(b.active?0:1)+'">'+(b.active?"বন্ধ করুন":"চালু করুন")+'</button><button class="btn d" data-sv="delbot" data-id="'+b.id+'">মুছুন</button></div>'}).join("")||'<div class="muted">এখনো কোনো বট নেই।</div>')+
  '<div class="form" style="margin-top:12px"><label>বটের নাম (যেকোনো)<input type="text" id="sv_bl" maxlength="40"></label><label>Bot Token<input type="text" id="sv_bt" autocomplete="off"></label><label>চ্যানেল আইডি (যেমন -1001234567890)<input type="text" id="sv_bc" autocomplete="off"></label><button class="btn p" data-sv="addbot">বট যোগ করুন</button></div></div>';
  h+='<div class="box"><h3>ImgBB চাবি (ছবির জন্য)</h3><p class="muted">একাধিক চাবি দিলে ঘুরিয়ে ঘুরিয়ে ব্যবহার হবে, একটা ব্যর্থ হলে পরেরটা চেষ্টা করবে।</p>'+
  ((r[2].data||[]).map(function(k){return '<div class="row"><div class="grow"><b>'+esc(k.label)+'</b><div class="muted">চাবি: '+mask(k.api_key)+' · আপলোড: '+k.uploads+'</div></div><button class="btn" data-sv="togkey" data-id="'+k.id+'" data-v="'+(k.active?0:1)+'">'+(k.active?"বন্ধ করুন":"চালু করুন")+'</button><button class="btn d" data-sv="delkey" data-id="'+k.id+'">মুছুন</button></div>'}).join("")||'<div class="muted">এখনো কোনো চাবি নেই।</div>')+
@@ -240,6 +262,7 @@ document.addEventListener("click",async function(e){
   if(a=="addbot"){var l=$("sv_bl").value.trim(),tk=$("sv_bt").value.trim(),ch=$("sv_bc").value.trim();if(!l||!tk||!ch){note("তিনটি ঘরই পূরণ করুন");return}if(!/^\d+:[\w-]{20,}$/.test(tk)){note("Bot Token ঠিক দেখাচ্ছে না (১২৩৪:ABC... ধরনের হয়)");return}if(!/^(-?\d+|@\w+)$/.test(ch)){note("চ্যানেল আইডি ঠিক দেখাচ্ছে না (যেমন -1001234567890)");return}x=await db.from("tg_bots").insert({label:l,token:tk,chat_id:ch});if(x.error)throw x.error;note("বট যোগ হয়েছে");pSv()}
   if(a=="togbot"){x=await db.from("tg_bots").update({active:b.dataset.v=="1"}).eq("id",id);if(x.error)throw x.error;pSv()}
   if(a=="delbot"){if(!confirm("বট মুছবেন? এই বটে ফাইল জমা থাকলে মোছা যাবে না।"))return;x=await db.from("tg_bots").delete().eq("id",id);if(x.error)throw x.error;pSv()}
+  if(a=="testbot"){var w=await wurl(),s0=(await db.auth.getSession()).data.session,rr=await fetch(w+"/bot-test?id="+id,{headers:{Authorization:"Bearer "+s0.access_token}}),jj={};try{jj=await rr.json()}catch(e0){}alert(jj.msg||jj.error||"উত্তর পাওয়া যায়নি। Cloudflare-এ নতুন worker কোড Deploy করেছেন কিনা দেখুন।")}
   if(a=="addkey"){var kl=$("sv_kl").value.trim(),kk=$("sv_kk").value.trim();if(!kl||!kk){note("দুটি ঘরই পূরণ করুন");return}x=await db.from("imgbb_keys").insert({label:kl,api_key:kk});if(x.error)throw x.error;note("চাবি যোগ হয়েছে");pSv()}
   if(a=="togkey"){x=await db.from("imgbb_keys").update({active:b.dataset.v=="1"}).eq("id",id);if(x.error)throw x.error;pSv()}
   if(a=="delkey"){if(!confirm("চাবি মুছবেন?"))return;x=await db.from("imgbb_keys").delete().eq("id",id);if(x.error)throw x.error;pSv()}
