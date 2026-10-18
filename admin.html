@@ -72,7 +72,7 @@ var $=function(i){return document.getElementById(i)},
 esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
 db,ME,G=[],C=[],
 ROLES=["user","vip","premium","moderator","owner"],
-TABS=[["ov","ওভারভিউ"],["ap","মড তালিকা"],["add","মড যোগ"],["gm","গেম ও ক্যাটাগরি",1],["us","ইউজার ও ব্যাজ",1],["ad","বিজ্ঞাপন",1]],
+TABS=[["ov","ওভারভিউ"],["ap","মড তালিকা"],["add","মড যোগ"],["gm","গেম ও ক্যাটাগরি",1],["us","ইউজার ও ব্যাজ",1],["ad","বিজ্ঞাপন",1],["sv","সার্ভার",1]],
 ST={pending:"অপেক্ষমাণ",approved:"অ্যাপ্রুভড",rejected:"বাতিল"};
 
 function note(t){var n=$("toast");n.textContent=t;n.hidden=false;clearTimeout(note.t);note.t=setTimeout(function(){n.hidden=true},4500)}
@@ -80,13 +80,22 @@ function err(e){note("সমস্যা: "+(e&&e.message?e.message:e))}
 function isOwner(){return ME.role=="owner"}
 function pill(r){return r&&r!="user"?'<span class="pill '+esc(r)+'">'+esc(r)+'</span>':""}
 
-async function upImg(file,folder){
- var ext=(file.name.split(".").pop()||"png").toLowerCase().replace(/[^a-z0-9]/g,"");
- var path=folder+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext;
- var r=await db.storage.from("images").upload(path,file,{contentType:file.type,cacheControl:"31536000"});
- if(r.error)throw r.error;
- return db.storage.from("images").getPublicUrl(path).data.publicUrl;
+var WURL="";
+async function wurl(){
+ if(WURL)return WURL;
+ var r=await db.from("site_settings").select("worker_url").eq("id",1).maybeSingle();
+ WURL=((r.data&&r.data.worker_url)||"").replace(/\/+$/,"");
+ return WURL;
 }
+async function wpost(path,file){
+ var w=await wurl();if(!w)throw new Error("সার্ভারের লিংক সেট করা হয়নি (প্যানেল → সার্ভার ট্যাব)");
+ var s=(await db.auth.getSession()).data.session;if(!s)throw new Error("আবার লগইন করুন");
+ var r=await fetch(w+path,{method:"POST",headers:{Authorization:"Bearer "+s.access_token,"Content-Type":file.type||"application/octet-stream","X-File-Name":encodeURIComponent(file.name)},body:file});
+ var j={};try{j=await r.json()}catch(e){}
+ if(!r.ok)throw new Error(j.error||"আপলোড ব্যর্থ হয়েছে");
+ return j;
+}
+async function upImg(file){return (await wpost("/img",file)).url}
 async function loadBase(){
  var r=await Promise.all([db.from("games").select("*").order("sort_order").order("id"),db.from("categories").select("*").order("sort_order").order("id")]);
  G=r[0].data||[];C=r[1].data||[];
@@ -116,7 +125,7 @@ function shell(){
 }
 function show(p){
  document.querySelectorAll("#tabs .tab").forEach(function(b){b.setAttribute("aria-selected",b.dataset.p==p)});
- ({ov:pOv,ap:pAp,add:pAdd,gm:pGm,us:pUs,ad:pAd})[p]();
+ ({ov:pOv,ap:pAp,add:pAdd,gm:pGm,us:pUs,ad:pAd,sv:pSv})[p]();
 }
 
 /* ওভারভিউ */
@@ -147,19 +156,45 @@ async function listMods(){
 /* মড যোগ */
 function pAdd(){
  if(!G.length){$("panel").innerHTML='<div class="empty">আগে "গেম ও ক্যাটাগরি" ট্যাব থেকে গেম ও ক্যাটাগরি যোগ করুন।</div>';return}
- $("panel").innerHTML='<div class="box"><h3>নতুন মড যোগ</h3><div class="form"><label>গেম<select id="mg">'+G.map(function(g){return '<option value="'+g.id+'">'+esc(g.name)+'</option>'}).join("")+'</select></label><label>ক্যাটাগরি<select id="mc"></select></label><label>নাম<input type="text" id="mt" maxlength="120"></label><label>বিবরণ<textarea id="md" rows="3" maxlength="1000"></textarea></label><label>মেইন ছবি (বড় করে প্রথমে দেখাবে, সর্বোচ্চ ৫ MB)<input type="file" id="mf" accept="image/png,image/jpeg,image/webp"></label><label>প্রিভিউ ছবি (একসাথে একাধিক বাছুন, সর্বোচ্চ ৮টি)<input type="file" id="mp" accept="image/png,image/jpeg,image/webp" multiple></label><label>YouTube প্রিভিউ ভিডিও লিংক (ঐচ্ছিক)<input type="url" id="mvd" placeholder="https://www.youtube.com/watch?v=..."></label><label>গেম ভার্সন (ঐচ্ছিক, যেমন BUSSID v4.3)<input type="text" id="mv" maxlength="40"></label><label>কীভাবে ইনস্টল করবেন (ঐচ্ছিক)<textarea id="mi" rows="3" maxlength="1500"></textarea></label><label>মূল নির্মাতার নাম (ঐচ্ছিক)<input type="text" id="mn" maxlength="80"></label><label>লেখকের Facebook লিংক (ঐচ্ছিক)<input type="url" id="sf" placeholder="https://"></label><label>লেখকের YouTube লিংক (ঐচ্ছিক)<input type="url" id="sy" placeholder="https://"></label><label>লেখকের Telegram লিংক (ঐচ্ছিক)<input type="url" id="st" placeholder="https://"></label><label>ডাউনলোড লিংক (Mega, Drive বা Telegram)<input type="url" id="ml" placeholder="https://"></label><div class="muted">সরাসরি ফাইল আপলোড (B2) পরের ধাপে যোগ হবে। এখন লিংক দিন।</div><button class="btn p" id="ms">যোগ করুন</button></div></div>';
+ $("panel").innerHTML='<div class="box"><h3>নতুন মড যোগ</h3><div class="form">'+
+ '<label>গেম<select id="mg">'+G.map(function(g){return '<option value="'+g.id+'">'+esc(g.name)+'</option>'}).join("")+'</select></label>'+
+ '<label>ক্যাটাগরি<select id="mc"></select></label>'+
+ '<label>নাম<input type="text" id="mt" maxlength="120"></label>'+
+ '<label>বিবরণ<textarea id="md" rows="3" maxlength="1500"></textarea></label>'+
+ '<label>মেইন ছবি (বড় করে প্রথমে দেখাবে, সর্বোচ্চ ৫ MB)<input type="file" id="mf" accept="image/png,image/jpeg,image/webp"></label>'+
+ '<label>প্রিভিউ ছবি (একসাথে একাধিক বাছুন, সর্বোচ্চ ৮টি)<input type="file" id="mp" accept="image/png,image/jpeg,image/webp" multiple></label>'+
+ '<label>YouTube প্রিভিউ ভিডিও লিংক (ঐচ্ছিক)<input type="url" id="mvd" placeholder="https://www.youtube.com/watch?v=..."></label>'+
+ '<label>গেম ভার্সন (ঐচ্ছিক, যেমন BUSSID v4.3)<input type="text" id="mv" maxlength="40"></label>'+
+ '<label>কীভাবে ইনস্টল করবেন (ঐচ্ছিক)<textarea id="mi" rows="3" maxlength="1500"></textarea></label>'+
+ '<label>মূল নির্মাতার নাম (ঐচ্ছিক)<input type="text" id="mn" maxlength="80"></label>'+
+ '<label>লেখকের Facebook লিংক (ঐচ্ছিক)<input type="url" id="sf" placeholder="https://"></label>'+
+ '<label>লেখকের YouTube লিংক (ঐচ্ছিক)<input type="url" id="sy" placeholder="https://"></label>'+
+ '<label>লেখকের Telegram লিংক (ঐচ্ছিক)<input type="url" id="st" placeholder="https://"></label>'+
+ '<label>মডের ফাইল (সর্বোচ্চ ২০ MB, Telegram-এ জমা হবে)<input type="file" id="mfile"></label>'+
+ '<label>অথবা Google Drive লিংক (২০ MB-এর বেশি হলে)<input type="url" id="ml" placeholder="https://drive.google.com/..."></label>'+
+ '<button class="btn p" id="ms">যোগ করুন</button><div class="muted" id="mm"></div></div></div>';
  var fill=function(){$("mc").innerHTML=C.filter(function(c){return c.game_id==$("mg").value}).map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>'}).join("")};
  $("mg").onchange=fill;fill();
  $("ms").onclick=async function(){
-  var t=$("mt").value.trim(),cat=+$("mc").value;
+  var t=$("mt").value.trim(),cat=+$("mc").value,fl=$("mfile").files[0],dl=$("ml").value.trim(),mf=$("mf").files[0],b=this;
   if(!t||!cat){note("নাম ও ক্যাটাগরি দিন");return}
-  this.disabled=true;
+  if(!fl&&!dl){note("ফাইল আপলোড করুন অথবা Google Drive লিংক দিন");return}
+  if(fl&&dl){note("ফাইল বা Drive লিংক, যেকোনো একটা দিন");return}
+  if(fl&&fl.size>20*1048576){note("ফাইল ২০ MB-এর বেশি, তাই Google Drive লিংক দিন");return}
+  if(dl&&!/^https:\/\/(drive|docs)\.google\.com\//i.test(dl)){note("শুধু Google Drive লিংক চলবে");return}
+  b.disabled=true;
   try{
-   var f=$("mf").files[0],cover=f?await upImg(f,"covers"):null;var pv=[],fl=[].slice.call($("mp").files).slice(0,8);for(var i=0;i<fl.length;i++)pv.push(await upImg(fl[i],"previews"));
-   var r=await db.from("mods").insert({game_id:+$("mg").value,category_id:cat,title:t,description:$("md").value.trim()||null,cover_url:cover,alt_link:$("ml").value.trim()||null,previews:pv,game_version:$("mv").value.trim()||null,video_url:$("mvd").value.trim()||null,install_steps:$("mi").value.trim()||null,credit_name:$("mn").value.trim()||null,social_facebook:$("sf").value.trim()||null,social_youtube:$("sy").value.trim()||null,social_telegram:$("st").value.trim()||null,uploader_id:ME.id,status:"approved",approved_at:new Date().toISOString(),reviewed_by:ME.id});
+   $("mm").textContent="ছবি আপলোড হচ্ছে...";
+   var cover=mf?await upImg(mf):null,pv=[],pf=[].slice.call($("mp").files).slice(0,8);
+   for(var i=0;i<pf.length;i++)pv.push(await upImg(pf[i]));
+   var fj=null;
+   if(fl){$("mm").textContent="ফাইল আপলোড হচ্ছে, একটু অপেক্ষা করুন...";fj=await wpost("/file",fl)}
+   var r=await db.from("mods").insert({game_id:+$("mg").value,category_id:cat,title:t,description:$("md").value.trim()||null,cover_url:cover,previews:pv,video_url:$("mvd").value.trim()||null,game_version:$("mv").value.trim()||null,install_steps:$("mi").value.trim()||null,credit_name:$("mn").value.trim()||null,social_facebook:$("sf").value.trim()||null,social_youtube:$("sy").value.trim()||null,social_telegram:$("st").value.trim()||null,dl_kind:fl?"tg":"drive",file_size:fl?fl.size:null,uploader_id:ME.id,status:"approved",approved_at:new Date().toISOString(),reviewed_by:ME.id}).select("id").single();
    if(r.error)throw r.error;
+   var r2=await db.from("mod_secrets").insert(fl?{mod_id:r.data.id,tg_bot_id:fj.bot_id,tg_file_id:fj.file_id,file_name:fj.name}:{mod_id:r.data.id,drive_link:dl});
+   if(r2.error){await db.from("mods").delete().eq("id",r.data.id);throw r2.error}
    note("মড যোগ হয়েছে");pAdd();
-  }catch(e){err(e);this.disabled=false}
+  }catch(e){err(e);b.disabled=false;$("mm").textContent=""}
  };
 }
 
@@ -183,6 +218,33 @@ async function pUs(){
   return '<div class="row">'+(u.avatar_url?'<img class="thumb" src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'<div class="thumb"></div>')+'<div class="grow">'+esc(u.display_name||"নামহীন")+'</div><select data-u="'+u.id+'"'+(u.id==ME.id?" disabled":"")+'>'+ROLES.map(function(x){return '<option'+(x==u.role?" selected":"")+'>'+x+'</option>'}).join("")+'</select></div>';
  }).join("");
 }
+
+/* সার্ভার: Worker লিংক, Telegram বট, ImgBB চাবি (শুধু Owner) */
+async function pSv(){
+ var r=await Promise.all([db.from("site_settings").select("worker_url").eq("id",1).maybeSingle(),db.from("tg_bots").select("id,label,token,chat_id,active,uploads").order("id"),db.from("imgbb_keys").select("id,label,api_key,active,uploads").order("id")]);
+ var wu=(r[0].data&&r[0].data.worker_url)||"",mask=function(s){return esc(String(s).slice(0,6))+"••••"};
+ var h='<div class="box"><h3>সার্ভারের লিংক (Cloudflare Worker)</h3><div class="inl"><label>লিংক (https://...)<input type="url" id="sv_w" value="'+esc(wu)+'" placeholder="https://bsstore-api.আপনার-নাম.workers.dev"></label><button class="btn p" data-sv="savew">সেভ</button></div></div>';
+ h+='<div class="box"><h3>Telegram বট (মডের ফাইল রাখার জন্য)</h3><p class="muted">একাধিক বট দিলে যেটা কম ব্যবহার হয়েছে সেটাতে ফাইল যাবে। প্রতিটি বট তার চ্যানেলের অ্যাডমিন হতে হবে।</p>'+
+ ((r[1].data||[]).map(function(b){return '<div class="row"><div class="grow"><b>'+esc(b.label)+'</b><div class="muted">টোকেন: '+mask(b.token)+' · চ্যানেল: '+esc(b.chat_id)+' · আপলোড: '+b.uploads+'</div></div><button class="btn" data-sv="togbot" data-id="'+b.id+'" data-v="'+(b.active?0:1)+'">'+(b.active?"বন্ধ করুন":"চালু করুন")+'</button><button class="btn d" data-sv="delbot" data-id="'+b.id+'">মুছুন</button></div>'}).join("")||'<div class="muted">এখনো কোনো বট নেই।</div>')+
+ '<div class="form" style="margin-top:12px"><label>বটের নাম (যেকোনো)<input type="text" id="sv_bl" maxlength="40"></label><label>Bot Token<input type="text" id="sv_bt" autocomplete="off"></label><label>চ্যানেল আইডি (যেমন -1001234567890)<input type="text" id="sv_bc" autocomplete="off"></label><button class="btn p" data-sv="addbot">বট যোগ করুন</button></div></div>';
+ h+='<div class="box"><h3>ImgBB চাবি (ছবির জন্য)</h3><p class="muted">একাধিক চাবি দিলে ঘুরিয়ে ঘুরিয়ে ব্যবহার হবে, একটা ব্যর্থ হলে পরেরটা চেষ্টা করবে।</p>'+
+ ((r[2].data||[]).map(function(k){return '<div class="row"><div class="grow"><b>'+esc(k.label)+'</b><div class="muted">চাবি: '+mask(k.api_key)+' · আপলোড: '+k.uploads+'</div></div><button class="btn" data-sv="togkey" data-id="'+k.id+'" data-v="'+(k.active?0:1)+'">'+(k.active?"বন্ধ করুন":"চালু করুন")+'</button><button class="btn d" data-sv="delkey" data-id="'+k.id+'">মুছুন</button></div>'}).join("")||'<div class="muted">এখনো কোনো চাবি নেই।</div>')+
+ '<div class="form" style="margin-top:12px"><label>নাম (যেকোনো)<input type="text" id="sv_kl" maxlength="40"></label><label>API চাবি<input type="text" id="sv_kk" autocomplete="off"></label><button class="btn p" data-sv="addkey">চাবি যোগ করুন</button></div></div>';
+ $("panel").innerHTML=h;
+}
+document.addEventListener("click",async function(e){
+ var b=e.target.closest("[data-sv]");if(!b)return;
+ var a=b.dataset.sv,id=+b.dataset.id,x;
+ try{
+  if(a=="savew"){var v=$("sv_w").value.trim().replace(/\/+$/,"");if(v&&!/^https:\/\//i.test(v)){note("লিংক https:// দিয়ে শুরু হতে হবে");return}x=await db.from("site_settings").upsert({id:1,worker_url:v||null,updated_at:new Date().toISOString()});if(x.error)throw x.error;WURL="";note("সেভ হয়েছে")}
+  if(a=="addbot"){var l=$("sv_bl").value.trim(),tk=$("sv_bt").value.trim(),ch=$("sv_bc").value.trim();if(!l||!tk||!ch){note("তিনটি ঘরই পূরণ করুন");return}if(!/^\d+:[\w-]{20,}$/.test(tk)){note("Bot Token ঠিক দেখাচ্ছে না (১২৩৪:ABC... ধরনের হয়)");return}if(!/^(-?\d+|@\w+)$/.test(ch)){note("চ্যানেল আইডি ঠিক দেখাচ্ছে না (যেমন -1001234567890)");return}x=await db.from("tg_bots").insert({label:l,token:tk,chat_id:ch});if(x.error)throw x.error;note("বট যোগ হয়েছে");pSv()}
+  if(a=="togbot"){x=await db.from("tg_bots").update({active:b.dataset.v=="1"}).eq("id",id);if(x.error)throw x.error;pSv()}
+  if(a=="delbot"){if(!confirm("বট মুছবেন? এই বটে ফাইল জমা থাকলে মোছা যাবে না।"))return;x=await db.from("tg_bots").delete().eq("id",id);if(x.error)throw x.error;pSv()}
+  if(a=="addkey"){var kl=$("sv_kl").value.trim(),kk=$("sv_kk").value.trim();if(!kl||!kk){note("দুটি ঘরই পূরণ করুন");return}x=await db.from("imgbb_keys").insert({label:kl,api_key:kk});if(x.error)throw x.error;note("চাবি যোগ হয়েছে");pSv()}
+  if(a=="togkey"){x=await db.from("imgbb_keys").update({active:b.dataset.v=="1"}).eq("id",id);if(x.error)throw x.error;pSv()}
+  if(a=="delkey"){if(!confirm("চাবি মুছবেন?"))return;x=await db.from("imgbb_keys").delete().eq("id",id);if(x.error)throw x.error;pSv()}
+ }catch(er){err(er)}
+});
 
 /* বিজ্ঞাপন সেটিং (শুধু Owner) */
 var ADF=[["popunder","Popunder কোড","সব পেজে নিজে বসবে, আলাদা কিছু করতে হবে না"],["socialbar","Social Bar কোড","সব পেজে নিজে বসবে"],["top_d","ওপরের ব্যানার, কম্পিউটার (728x90)",""],["top_m","ওপরের ব্যানার, মোবাইল (320x50)",""],["mid","হোমপেজের মাঝের ব্যানার (300x250)",""],["side","মড পেজের ডান পাশের ব্যানার (300x250)",""],["rel","মড পেজের নিচের Native Banner",""],["bottom","হোমপেজের নিচের Native Banner",""],["gate1","ডাউনলোড ধাপ ১: ব্যানার (300x250)",""]];

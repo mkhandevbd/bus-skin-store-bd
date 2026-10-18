@@ -77,13 +77,22 @@ MAXP=6,MAXMB=5,db,ME,G=[],C=[];
 function note(t){var n=$("toast");n.textContent=t;n.hidden=false;clearTimeout(note.t);note.t=setTimeout(function(){n.hidden=true},4500)}
 function badge(r){return BADGE[r]?'<span class="badge '+esc(r)+'">'+BADGE[r]+'</span>':""}
 function okLink(v){return !v||/^https?:\/\//i.test(v)}
-async function up(file){
- var ext=(file.name.split(".").pop()||"png").toLowerCase().replace(/[^a-z0-9]/g,"");
- var path="users/"+ME.id+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext;
- var r=await db.storage.from("images").upload(path,file,{contentType:file.type,cacheControl:"31536000"});
- if(r.error)throw r.error;
- return db.storage.from("images").getPublicUrl(path).data.publicUrl;
+var WURL="";
+async function wurl(){
+ if(WURL)return WURL;
+ var r=await db.from("site_settings").select("worker_url").eq("id",1).maybeSingle();
+ WURL=((r.data&&r.data.worker_url)||"").replace(/\/+$/,"");
+ return WURL;
 }
+async function wpost(path,file){
+ var w=await wurl();if(!w)throw new Error("আপলোড সার্ভার এখনো চালু হয়নি, একটু পরে চেষ্টা করুন");
+ var s=(await db.auth.getSession()).data.session;if(!s)throw new Error("আবার লগইন করুন");
+ var r=await fetch(w+path,{method:"POST",headers:{Authorization:"Bearer "+s.access_token,"Content-Type":file.type||"application/octet-stream","X-File-Name":encodeURIComponent(file.name)},body:file});
+ var j={};try{j=await r.json()}catch(e){}
+ if(!r.ok)throw new Error(j.error||"আপলোড ব্যর্থ হয়েছে");
+ return j;
+}
+async function up(file){return (await wpost("/img",file)).url}
 function loginBox(){
  $("app").innerHTML='<div class="box" style="margin-top:30px;text-align:center"><h2>মড আপলোড করতে লগইন করুন</h2><p class="muted">গুগল অ্যাকাউন্ট দিয়ে এক ক্লিকে লগইন হবে।</p><button class="btn p" id="gl">গুগল দিয়ে লগইন</button></div>';
  $("gl").onclick=function(){db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname}})};
@@ -105,7 +114,7 @@ async function init(){
 function form(){
  if(!G.length){$("app").innerHTML='<div class="empty" style="margin-top:30px">এখনো কোনো গেম যোগ হয়নি।</div>';return}
  $("app").innerHTML='<h1>মড আপলোড করুন</h1><p class="muted">জমা দিলে মডটি <b>অপেক্ষমাণ</b> থাকবে, মডারেটর দেখে অ্যাপ্রুভ করলে সাইটে আসবে।</p>'+
- '<div class="box"><h2>নিয়মগুলো</h2><ul class="rules"><li>শুধু নিজের বানানো বা অনুমতি পাওয়া মড দিন। অন্যের কাজ হলে নির্মাতার নাম ও লিংক ক্রেডিটে দিন।</li><li>ভাইরাস, ক্ষতিকর বা নকল ফাইল দিলে অ্যাকাউন্ট বন্ধ হতে পারে।</li><li>একসাথে সর্বোচ্চ ৫টি মড অপেক্ষমাণ রাখা যাবে।</li></ul></div>'+
+ '<div class="box"><h2>নিয়মগুলো</h2><ul class="rules"><li>শুধু নিজের বানানো বা অনুমতি পাওয়া মড দিন। অন্যের কাজ হলে নির্মাতার নাম ও লিংক ক্রেডিটে দিন।</li><li>ভাইরাস, ক্ষতিকর বা নকল ফাইল দিলে অ্যাকাউন্ট বন্ধ হতে পারে।</li><li>একসাথে সর্বোচ্চ ৫টি মড অপেক্ষমাণ রাখা যাবে।</li><li>মডের ফাইল ২০ MB পর্যন্ত সরাসরি আপলোড করা যায়। এর বেশি হলে শুধু Google Drive লিংক দিন (শেয়ার সেটিং "Anyone with the link"), অন্য সাইটের লিংক চলবে না।</li></ul></div>'+
  '<div class="box"><div class="form">'+
  '<div class="two"><label>গেম<select id="g">'+G.map(function(g){return '<option value="'+g.id+'">'+esc(g.name)+'</option>'}).join("")+'</select></label><label>ক্যাটাগরি<select id="c"></select></label></div>'+
  '<label>মডের নাম *<input type="text" id="t" maxlength="120"></label>'+
@@ -118,7 +127,8 @@ function form(){
  '<label>আপনার Facebook লিংক (ঐচ্ছিক)<input type="url" id="sf" placeholder="https://"></label>'+
  '<label>আপনার YouTube লিংক (ঐচ্ছিক)<input type="url" id="sy" placeholder="https://"></label>'+
  '<label>আপনার Telegram লিংক (ঐচ্ছিক)<input type="url" id="st" placeholder="https://"></label>'+
- '<label>ডাউনলোড লিংক * (Mega, Drive, Telegram ইত্যাদি)<input type="url" id="l" placeholder="https://"></label>'+
+ '<label>মডের ফাইল * (সর্বোচ্চ ২০ MB, সরাসরি আপলোড)<input type="file" id="fl"></label>'+
+ '<label>অথবা Google Drive লিংক (২০ MB-এর বেশি হলে)<input type="url" id="l" placeholder="https://drive.google.com/..."></label>'+
  '<button class="btn p" id="send">জমা দিন</button><div class="muted" id="msg"></div></div></div>'+
  '<div class="box"><h2>আমার আপলোড</h2><div id="mine" class="muted">লোড হচ্ছে...</div></div>';
  var fill=function(){$("c").innerHTML=C.filter(function(c){return c.game_id==$("g").value}).map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>'}).join("")};
@@ -126,10 +136,13 @@ function form(){
  $("send").onclick=send;
 }
 async function send(){
- var t=$("t").value.trim(),cat=+$("c").value,link=$("l").value.trim(),mf=$("mf").files[0],pf=[].slice.call($("mp").files).slice(0,MAXP);
+ var t=$("t").value.trim(),cat=+$("c").value,dl=$("l").value.trim(),fl=$("fl").files[0],mf=$("mf").files[0],pf=[].slice.call($("mp").files).slice(0,MAXP);
  if(!t||!cat){note("মডের নাম ও ক্যাটাগরি দিন");return}
  if(!mf){note("মেইন ছবি দিন");return}
- if(!link||!okLink(link)){note("সঠিক ডাউনলোড লিংক দিন (https:// দিয়ে শুরু)");return}
+ if(!fl&&!dl){note("ফাইল আপলোড করুন অথবা Google Drive লিংক দিন");return}
+ if(fl&&dl){note("ফাইল বা Drive লিংক, যেকোনো একটা দিন");return}
+ if(fl&&fl.size>20*1048576){note("ফাইল ২০ MB-এর বেশি, তাই শুধু Google Drive লিংক দিন");return}
+ if(dl&&!/^https:\/\/(drive|docs)\.google\.com\//i.test(dl)){note("শুধু Google Drive লিংক চলবে");return}
  var soc=[$("sf").value.trim(),$("sy").value.trim(),$("st").value.trim()];
  if(!soc.every(okLink)){note("সোশ্যাল লিংক https:// দিয়ে শুরু হতে হবে");return}
  var vd=$("vd").value.trim();
@@ -140,8 +153,12 @@ async function send(){
  try{
   var cover=await up(mf),pv=[];
   for(var i=0;i<pf.length;i++)pv.push(await up(pf[i]));
-  var r=await db.from("mods").insert({game_id:+$("g").value,category_id:cat,title:t,description:$("d").value.trim()||null,cover_url:cover,previews:pv,game_version:$("v").value.trim()||null,install_steps:$("i").value.trim()||null,credit_name:$("n").value.trim()||null,social_facebook:soc[0]||null,social_youtube:soc[1]||null,social_telegram:soc[2]||null,alt_link:link,video_url:vd||null,uploader_id:ME.id,status:"pending"});
+  var fj=null;
+  if(fl){$("msg").textContent="ফাইল আপলোড হচ্ছে, একটু অপেক্ষা করুন...";fj=await wpost("/file",fl)}
+  var r=await db.from("mods").insert({game_id:+$("g").value,category_id:cat,title:t,description:$("d").value.trim()||null,cover_url:cover,previews:pv,game_version:$("v").value.trim()||null,install_steps:$("i").value.trim()||null,credit_name:$("n").value.trim()||null,social_facebook:soc[0]||null,social_youtube:soc[1]||null,social_telegram:soc[2]||null,video_url:vd||null,dl_kind:fl?"tg":"drive",file_size:fl?fl.size:null,uploader_id:ME.id,status:"pending"}).select("id").single();
   if(r.error)throw r.error;
+  var r2=await db.from("mod_secrets").insert(fl?{mod_id:r.data.id,tg_bot_id:fj.bot_id,tg_file_id:fj.file_id,file_name:fj.name}:{mod_id:r.data.id,drive_link:dl});
+  if(r2.error){await db.from("mods").delete().eq("id",r.data.id);throw r2.error}
   note("জমা হয়েছে! অ্যাপ্রুভের পর সাইটে আসবে।");form();mine();window.scrollTo({top:0,behavior:"smooth"});
  }catch(e){
   b.disabled=false;$("msg").textContent="";

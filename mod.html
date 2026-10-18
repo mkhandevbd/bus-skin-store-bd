@@ -161,34 +161,59 @@ function render(){
  dlBox();related();ADS.fill(document);
 }
 
-/* ডাউনলোড বক্স: ব্যাজ নেই হলে ২ বার ১৫ সেকেন্ড */
-function dlBox(){
- var url=safe(M.alt_link),b=$("dl");
- if(!url){b.innerHTML='<h3>ডাউনলোড</h3><p class="muted">ডাউনলোড লিংক শীঘ্রই যোগ হবে।</p>';return}
- if(FREE.indexOf(role)>-1){b.innerHTML='<h3>ডাউনলোড</h3><p class="muted">আপনার ব্যাজের জন্য বিজ্ঞাপন ছাড়াই ডাউনলোড ✨</p><button class="btn p dlb" id="go">ডাউনলোড করুন</button>';$("go").onclick=go;return}
+/* ডাউনলোড বক্স: ব্যাজ নেই হলে ২ বার ১৫ সেকেন্ড, আসল তালা সার্ভারে */
+var TK="",WURL="";
+async function wurl(){
+ if(WURL)return WURL;
+ var r=await db.from("site_settings").select("worker_url").eq("id",1).maybeSingle();
+ WURL=((r.data&&r.data.worker_url)||"").replace(/\/+$/,"");
+ return WURL;
+}
+async function getTicket(){
+ var w=await wurl();if(!w)throw new Error("ডাউনলোড সার্ভার এখনো চালু হয়নি");
+ var s=(await db.auth.getSession()).data.session,h=s?{Authorization:"Bearer "+s.access_token}:{};
+ var r=await fetch(w+"/ticket?mod="+M.id,{headers:h}),j=await r.json();
+ if(!r.ok)throw new Error(j.error||"সমস্যা হয়েছে");
+ TK=j.t;return j;
+}
+async function dlBox(){
+ var b=$("dl");
+ if(!M.dl_kind&&!safe(M.alt_link)){b.innerHTML='<h3>ডাউনলোড</h3><p class="muted">ডাউনলোড লিংক শীঘ্রই যোগ হবে।</p>';return}
+ if(FREE.indexOf(role)>-1){
+  try{if(M.dl_kind)await getTicket()}catch(e){b.innerHTML='<h3>ডাউনলোড</h3><p class="muted">'+esc(e.message)+'</p>';return}
+  b.innerHTML='<h3>ডাউনলোড</h3><p class="muted">আপনার ব্যাজের জন্য বিজ্ঞাপন ছাড়াই ডাউনলোড ✨</p><button class="btn p dlb" id="go">ডাউনলোড করুন</button>';$("go").onclick=go;return;
+ }
  stage(1);
 }
 function stage(n){
  $("dl").innerHTML='<h3>ডাউনলোড (ধাপ '+n+'/'+ROUNDS+')</h3><div class="adslot" data-ad="'+(n==1?"gate1":"gateVideo")+'"></div><div class="prog"><i id="pb"></i></div><p class="muted" id="ct"></p><button class="btn p dlb" id="nx" disabled>অপেক্ষা করুন...</button><p class="muted" style="margin:8px 0 0">ব্যাজ থাকলে বিজ্ঞাপন ছাড়াই ডাউনলোড করা যায়।</p>';
  ADS.fill($("dl"));
- var left=SECS;
- function up(){$("ct").textContent="অপেক্ষা করুন: "+left+" সেকেন্ড";$("pb").style.width=((SECS-left)/SECS*100)+"%"}
+ var left=SECS,bad=false;
+ if(n==1&&M.dl_kind){TK="";getTicket().catch(function(e){bad=true;$("ct").textContent=e.message})}
+ function up(){if(!bad)$("ct").textContent="অপেক্ষা করুন: "+left+" সেকেন্ড";$("pb").style.width=((SECS-left)/SECS*100)+"%"}
  up();
  var t=setInterval(function(){
   if(document.hidden)return;
   left--;up();
   if(left<=0){
-   clearInterval(t);$("ct").textContent="প্রস্তুত ✅";$("pb").style.width="100%";
+   clearInterval(t);if(!bad)$("ct").textContent="প্রস্তুত ✅";$("pb").style.width="100%";
    var x=$("nx");x.disabled=false;x.textContent=n<ROUNDS?"পরের ধাপে যান":"ডাউনলোড করুন";
    x.onclick=n<ROUNDS?function(){stage(n+1)}:go;
   }
  },1000);
 }
 function go(){
- var u=safe(M.alt_link);if(!u)return;
+ if(M.dl_kind){
+  if(!TK){note("ডাউনলোডের টিকিট পাওয়া যায়নি, পেজ রিফ্রেশ করুন");return}
+  var u=WURL+"/download?mod="+M.id+"&t="+encodeURIComponent(TK);
+  M.downloads=(M.downloads||0)+1;$("sd").textContent=fmt(M.downloads);
+  window.open(u,"_blank","noopener");
+  return;
+ }
+ var l=safe(M.alt_link);if(!l)return;
  db.rpc("increment_downloads",{p_id:M.id});
  M.downloads=(M.downloads||0)+1;$("sd").textContent=fmt(M.downloads);
- window.open(u,"_blank","noopener");
+ window.open(l,"_blank","noopener");
 }
 async function related(){
  var r=await db.from("mods").select("id,title,cover_url,downloads").eq("category_id",M.category_id).eq("status","approved").neq("id",M.id).order("downloads",{ascending:false}).limit(6);
