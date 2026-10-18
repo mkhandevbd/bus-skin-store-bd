@@ -87,13 +87,25 @@ footer{border-top:1px solid var(--line);margin-top:36px;padding:20px 0;color:var
 .big iframe{width:100%;height:100%;border:0}
 .thumbs button{position:relative}
 .play{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:20px;background:rgba(0,0,0,.35)}
+.logoimg{height:34px;width:auto;max-width:130px;object-fit:contain}
+#big{cursor:zoom-in}
+#big::after{content:"⤢";position:absolute;right:10px;bottom:10px;width:32px;height:32px;border-radius:8px;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;font-size:18px}
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:60;display:grid;place-items:center;animation:fi .25s both}
+.lbc{display:grid;place-items:center;max-width:94vw;max-height:88vh}
+.lbc img{max-width:94vw;max-height:88vh;object-fit:contain;border-radius:8px}
+.lbc iframe{width:min(94vw,150vh);aspect-ratio:16/9;border:0;border-radius:8px}
+.lbx,.lbn{position:absolute;border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:50%;width:44px;height:44px;font-size:22px;cursor:pointer}
+.lbx{top:14px;right:14px}.lbn{top:50%;left:12px;transform:translateY(-50%)}.lbn.r{left:auto;right:12px}
+.lbx:hover,.lbn:hover{background:rgba(255,255,255,.28)}
+.lbi{position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#fff;font-size:14px}
 </style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="bus" viewBox="0 0 120 56"><rect x="4" y="6" width="112" height="38" rx="7" fill="var(--b)"/><rect x="4" y="30" width="112" height="7" fill="var(--s)"/><g fill="#dff3ff" opacity=".92"><rect x="12" y="12" width="16" height="14" rx="2"/><rect x="32" y="12" width="16" height="14" rx="2"/><rect x="52" y="12" width="16" height="14" rx="2"/><rect x="72" y="12" width="16" height="14" rx="2"/><rect x="94" y="12" width="16" height="20" rx="2"/></g><circle cx="30" cy="46" r="7" fill="#1a1d24"/><circle cx="92" cy="46" r="7" fill="#1a1d24"/><circle cx="30" cy="46" r="3" fill="#9aa4b4"/><circle cx="92" cy="46" r="3" fill="#9aa4b4"/></symbol></svg>
 <header><div class="wrap bar">
-  <a class="logo" href="index.html"><svg><use href="#bus"/></svg><span class="rgb">Bus Skin Store BD</span></a>
+  <a class="logo" id="logo" href="index.html"><svg><use href="#bus"/></svg><span class="rgb">Bus Skin Store BD</span></a>
   <a class="btn" href="upload.html">আপলোড</a>
+  <button class="btn" id="lang" aria-label="Language">EN</button>
   <button class="btn" id="theme" aria-label="থিম বদলান">🌓</button>
   <button class="btn p" id="login">গুগল দিয়ে লগইন</button>
   <div class="me" id="me" hidden></div>
@@ -113,7 +125,7 @@ var $=function(i){return document.getElementById(i)},
 esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
 safe=function(u){return /^https?:\/\//i.test(u||"")?u:""},
 BADGE={owner:"Owner",moderator:"Moderator",premium:"Premium",vip:"VIP"},
-FREE=["owner","moderator","premium","vip"],db,M,role="user",gal=[],FRESH=false,ROUNDS=2,SECS=15;
+FREE=["owner","moderator","premium","vip"],db,M,role="user",gal=[],CUR=0,FRESH=false,ROUNDS=2,SECS=15;
 
 function note(t){var n=$("toast");n.textContent=t;n.hidden=false;clearTimeout(note.t);note.t=setTimeout(function(){n.hidden=true},3000)}
 function fmt(n){n=n||0;return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":String(n)}
@@ -132,6 +144,7 @@ function itemHTML(i,auto){
 }
 function show(i){
  if(!gal[i])return;
+ CUR=i;
  $("big").innerHTML=(i==0&&FRESH?'<span class="tag">নতুন</span>':"")+itemHTML(i,true);
  document.querySelectorAll(".thumbs button").forEach(function(x){x.setAttribute("aria-current",x.dataset.i==i)});
 }
@@ -154,7 +167,7 @@ function render(){
  '<div class="adslot" data-ad="side"></div><div class="box"><h3>শেয়ার করুন</h3><div class="share"><a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href)+'">Facebook</a><a class="btn" target="_blank" rel="noopener noreferrer" href="https://t.me/share/url?url='+encodeURIComponent(location.href)+'&text='+encodeURIComponent(m.title)+'">Telegram</a><button class="btn" id="cp">লিংক কপি</button></div></div></aside>'+
  '<div class="rest">'+
  '<div class="box"><h2>বিবরণ</h2><div class="desc">'+(m.description?nl(m.description):'<span class="muted">কোনো বিবরণ দেওয়া হয়নি।</span>')+'</div></div>'+
- (m.install_steps?'<div class="box"><h2>কীভাবে ইনস্টল করবেন</h2><div class="desc">'+nl(m.install_steps)+'</div></div>':"")+
+ (m.install_steps?'<div class="box"><h2>ডাউনলোড গাইড</h2><div class="desc">'+nl(m.install_steps)+'</div></div>':"")+
  (m.credit_name?'<div class="box"><h2>ক্রেডিট</h2><div class="desc">মূল নির্মাতা: <b>'+esc(m.credit_name)+'</b></div></div>':"")+
  '<div class="adslot" data-ad="rel"></div><div id="rel"></div></div></div>';
  document.title=m.title+" – Bus Skin Store BD";
@@ -221,9 +234,28 @@ async function related(){
  $("rel").innerHTML='<h2>আরও মড</h2><div class="grid">'+r.data.map(function(m){return '<a class="rc" href="mod.html?id='+m.id+'"><div class="rt">'+(safe(m.cover_url)?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="">':'<svg style="width:60%;--b:var(--g);--s:var(--y)"><use href="#bus"/></svg>')+'</div><div class="rb">'+esc(m.title)+'<small>⬇ '+fmt(m.downloads)+'</small></div></a>'}).join("")+'</div>';
 }
 
+function openLB(i){
+ if(!gal.length)return;CUR=i;
+ var o=document.createElement("div");o.className="lb";o.id="lb";
+ o.innerHTML='<button class="lbx" aria-label="বন্ধ করুন">✕</button><button class="lbn" data-d="-1" aria-label="আগে">‹</button><div class="lbc" id="lbc"></div><button class="lbn r" data-d="1" aria-label="পরে">›</button><div class="lbi" id="lbi"></div>';
+ document.body.appendChild(o);document.body.style.overflow="hidden";lbShow();
+}
+function lbShow(){var g=gal[CUR];$("lbc").innerHTML=g.t=="v"?itemHTML(CUR,true):'<img src="'+esc(g.u)+'" alt="">';$("lbi").textContent=(CUR+1)+" / "+gal.length}
+function lbMove(d){CUR=(CUR+d+gal.length)%gal.length;lbShow()}
+function lbClose(){var o=$("lb");if(o){o.remove();document.body.style.overflow=""}}
+document.addEventListener("click",function(e){
+ if(e.target.closest(".lbx")||e.target.id=="lb"||e.target.id=="lbc"){lbClose();return}
+ var n=e.target.closest(".lbn");if(n){lbMove(+n.dataset.d);return}
+ if(e.target.closest("#big")&&gal.length)openLB(CUR);
+});
+document.addEventListener("keydown",function(e){if(!$("lb"))return;if(e.key=="Escape")lbClose();if(e.key=="ArrowRight")lbMove(1);if(e.key=="ArrowLeft")lbMove(-1)});
+var TX=0;
+document.addEventListener("touchstart",function(e){TX=e.changedTouches[0].clientX},{passive:true});
+document.addEventListener("touchend",function(e){if(!$("lb"))return;var d=e.changedTouches[0].clientX-TX;if(Math.abs(d)>50)lbMove(d<0?1:-1)},{passive:true});
 async function init(){
  if(typeof SUPABASE_URL=="undefined"||SUPABASE_URL.indexOf("supabase.co")<0){fail("config.js-এ Supabase URL ও কী বসাতে হবে।");return}
  db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ db.from("site_settings").select("logo_url").eq("id",1).maybeSingle().then(function(r){var u=r.data&&r.data.logo_url;if(/^https?:\/\//i.test(u||"")){var sv=$("logo").querySelector("svg");if(sv)sv.outerHTML='<img class="logoimg" src="'+esc(u)+'" alt="">'}});
  var q=new URLSearchParams(location.search),id=+(q.get("id")||0);
  try{if(id)sessionStorage.setItem("mid",id);else id=+(sessionStorage.getItem("mid")||0)}catch(e){}
  $("login").onclick=function(){db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname}})};
@@ -250,5 +282,6 @@ try{var s0=localStorage.getItem("t");if(s0)R.dataset.theme=s0}catch(e){}
 $("theme").onclick=function(){var cur=R.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),n=cur=="dark"?"light":"dark";R.dataset.theme=n;try{localStorage.setItem("t",n)}catch(e){}};
 init();
 </script>
+<script src="i18n.js"></script>
 </body>
 </html>

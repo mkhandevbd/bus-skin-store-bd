@@ -74,6 +74,7 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 .upbar{height:8px;background:var(--chip);border-radius:99px;overflow:hidden;margin-top:12px}
 .upbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g),var(--y));transition:width .25s}
 @media (prefers-reduced-motion:reduce){.ring.spin svg{animation:none}.upcard{animation:none}}
+.stp{max-height:90px;max-width:100%;border-radius:8px;border:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -93,7 +94,7 @@ var $=function(i){return document.getElementById(i)},
 esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
 db,ME,G=[],C=[],
 ROLES=["user","vip","premium","moderator","owner"],
-TABS=[["ov","ওভারভিউ"],["ap","মড তালিকা"],["add","মড যোগ"],["gm","গেম ও ক্যাটাগরি",1],["us","ইউজার ও ব্যাজ",1],["ad","বিজ্ঞাপন",1],["sv","সার্ভার",1]],
+TABS=[["ov","ওভারভিউ"],["ap","মড তালিকা"],["add","মড যোগ"],["gm","গেম ও ক্যাটাগরি",1],["us","ইউজার ও ব্যাজ",1],["ad","বিজ্ঞাপন",1],["sv","সার্ভার",1],["st","সাইট সেটিং",1]],
 ST={pending:"অপেক্ষমাণ",approved:"অ্যাপ্রুভড",rejected:"বাতিল"};
 
 function note(t){var n=$("toast");n.textContent=t;n.hidden=false;clearTimeout(note.t);note.t=setTimeout(function(){n.hidden=true},4500)}
@@ -185,7 +186,7 @@ function shell(){
 }
 function show(p){
  document.querySelectorAll("#tabs .tab").forEach(function(b){b.setAttribute("aria-selected",b.dataset.p==p)});
- ({ov:pOv,ap:pAp,add:pAdd,gm:pGm,us:pUs,ad:pAd,sv:pSv})[p]();
+ ({ov:pOv,ap:pAp,add:pAdd,gm:pGm,us:pUs,ad:pAd,sv:pSv,st:pSt})[p]();
 }
 
 /* ওভারভিউ */
@@ -225,7 +226,7 @@ function pAdd(){
  '<label>প্রিভিউ ছবি (একসাথে একাধিক বাছুন, সর্বোচ্চ ৮টি)<input type="file" id="mp" accept="image/png,image/jpeg,image/webp" multiple><div class="pv" id="pvp"></div></label>'+
  '<label>YouTube প্রিভিউ ভিডিও লিংক (ঐচ্ছিক)<input type="url" id="mvd" placeholder="https://www.youtube.com/watch?v=..."></label>'+
  '<label>গেম ভার্সন (ঐচ্ছিক, যেমন BUSSID v4.3)<input type="text" id="mv" maxlength="40"></label>'+
- '<label>কীভাবে ইনস্টল করবেন (ঐচ্ছিক)<textarea id="mi" rows="3" maxlength="1500"></textarea></label>'+
+ '<label>ডাউনলোড গাইড (ঐচ্ছিক, কীভাবে ইনস্টল করবেন)<textarea id="mi" rows="3" maxlength="1500"></textarea></label>'+
  '<label>মূল নির্মাতার নাম (ঐচ্ছিক)<input type="text" id="mn" maxlength="80"></label>'+
  '<label>লেখকের Facebook লিংক (ঐচ্ছিক)<input type="url" id="sf" placeholder="https://"></label>'+
  '<label>লেখকের YouTube লিংক (ঐচ্ছিক)<input type="url" id="sy" placeholder="https://"></label>'+
@@ -285,6 +286,25 @@ async function pUs(){
   return '<div class="row">'+(u.avatar_url?'<img class="thumb" src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'<div class="thumb"></div>')+'<div class="grow">'+esc(u.display_name||"নামহীন")+'</div><select data-u="'+u.id+'"'+(u.id==ME.id?" disabled":"")+'>'+ROLES.map(function(x){return '<option'+(x==u.role?" selected":"")+'>'+x+'</option>'}).join("")+'</select></div>';
  }).join("");
 }
+
+/* সাইট সেটিং: লোগো ও হোমপেজের ভিডিও/ছবি (শুধু Owner) */
+async function pSt(){
+ var r=await db.from("site_settings").select("logo_url,hero_video,hero_image").eq("id",1).maybeSingle(),c=r.data||{};
+ var im=function(u){return /^https?:\/\//i.test(u||"")?'<img class="stp" src="'+esc(u)+'" alt="">':'<div class="muted">এখনো কিছু দেওয়া হয়নি</div>'};
+ $("panel").innerHTML=
+ '<div class="box"><h3>সাইটের লোগো</h3><p class="muted">হেডারে বাসের আইকনের বদলে এই ছবি দেখাবে (PNG হলে ভালো, ৫ MB-এর কম)।</p>'+im(c.logo_url)+'<div class="form" style="margin-top:10px"><label>নতুন লোগো<input type="file" id="st_l" accept="image/png,image/jpeg,image/webp"></label><div class="inl"><button class="btn p" data-st="logo">লোগো সেভ করুন</button><button class="btn d" data-st="logo0">লোগো মুছুন</button></div></div></div>'+
+ '<div class="box"><h3>হোমপেজের ৩ডি স্ক্রিনের ভিডিও</h3><p class="muted">YouTube লিংক অথবা সরাসরি .mp4 লিংক দিন। ভিডিও শব্দ ছাড়া নিজে নিজে চলবে। ফাঁকা রাখলে নিচের ছবি, ছবিও না থাকলে বাসের অ্যানিমেশন দেখাবে।</p><div class="inl"><label>ভিডিও লিংক<input type="url" id="st_v" value="'+esc(c.hero_video||"")+'" placeholder="https://www.youtube.com/watch?v=..."></label><button class="btn p" data-st="hvid">সেভ</button></div></div>'+
+ '<div class="box"><h3>৩ডি স্ক্রিনের ছবি (ভিডিও না থাকলে)</h3>'+im(c.hero_image)+'<div class="form" style="margin-top:10px"><label>নতুন ছবি<input type="file" id="st_i" accept="image/png,image/jpeg,image/webp"></label><div class="inl"><button class="btn p" data-st="himg">ছবি সেভ করুন</button><button class="btn d" data-st="himg0">ছবি মুছুন</button></div></div></div>';
+}
+document.addEventListener("click",async function(e){
+ var b=e.target.closest("[data-st]");if(!b)return;
+ var a=b.dataset.st,x;
+ try{
+  if(a=="logo"||a=="himg"){var f=$(a=="logo"?"st_l":"st_i").files[0];if(!f){note("আগে ছবি বাছুন");return}b.disabled=true;var u=await upImg(f);x=await db.from("site_settings").upsert(a=="logo"?{id:1,logo_url:u}:{id:1,hero_image:u});b.disabled=false;if(x.error)throw x.error;note("সেভ হয়েছে");pSt()}
+  if(a=="logo0"||a=="himg0"){x=await db.from("site_settings").upsert(a=="logo0"?{id:1,logo_url:null}:{id:1,hero_image:null});if(x.error)throw x.error;note("মুছে গেছে");pSt()}
+  if(a=="hvid"){var v=$("st_v").value.trim();if(v&&!/^https:\/\//i.test(v)){note("লিংক https:// দিয়ে শুরু হতে হবে");return}x=await db.from("site_settings").upsert({id:1,hero_video:v||null});if(x.error)throw x.error;note("সেভ হয়েছে")}
+ }catch(er){b.disabled=false;err(er)}
+});
 
 /* সার্ভার: Worker লিংক, Telegram বট, ImgBB চাবি (শুধু Owner) */
 async function pSv(){
