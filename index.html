@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bus Skin Store BD – বাস স্কিন, মড ও ম্যাপ ডাউনলোড</title>
 <meta name="description" content="বাস সিমুলেটর ইন্দোনেশিয়া (BUSSID) সহ সিমুলেটর গেমের বাস স্কিন, মড ও ম্যাপ ফ্রি ডাউনলোড করুন।">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -152,6 +152,7 @@ h1.fire::after{left:68%;width:5px;height:5px;background:#ff6a00;animation-delay:
 .fbar label{display:flex;gap:6px;align-items:center;font-size:14px;font-weight:600}
 .fbar select{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:5px 8px}
 </style>
+<link rel="stylesheet" href="m.css">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="bus" viewBox="0 0 120 56"><rect x="4" y="6" width="112" height="38" rx="7" fill="var(--b)"/><rect x="4" y="30" width="112" height="7" fill="var(--s)"/><g fill="#dff3ff" opacity=".92"><rect x="12" y="12" width="16" height="14" rx="2"/><rect x="32" y="12" width="16" height="14" rx="2"/><rect x="52" y="12" width="16" height="14" rx="2"/><rect x="72" y="12" width="16" height="14" rx="2"/><rect x="94" y="12" width="16" height="20" rx="2"/></g><circle cx="30" cy="46" r="7" fill="#1a1d24"/><circle cx="92" cy="46" r="7" fill="#1a1d24"/><circle cx="30" cy="46" r="3" fill="#9aa4b4"/><circle cx="92" cy="46" r="3" fill="#9aa4b4"/></symbol></svg>
@@ -178,8 +179,8 @@ h1.fire::after{left:68%;width:5px;height:5px;background:#ff6a00;animation-delay:
     </div>
     <div class="stage"><div class="scr"><div class="bez"><div class="vid" id="vid"><div class="busfall"><svg viewBox="0 0 120 56" role="img" aria-label="বাস"><use href="#bus"/></svg><i></i></div></div></div><div class="stand"></div></div></div>
   </div>
-  <div class="games" id="games" role="group" aria-label="গেম বাছাই"></div>
-  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="sl" id="slg"><button class="sla" data-d="-1" aria-label="আগে">‹</button><div class="games scrollx" id="games" role="group" aria-label="গেম বাছাই"></div><button class="sla" data-d="1" aria-label="পরে">›</button></div>
+  <div class="sl" id="slt"><button class="sla" data-d="-1" aria-label="আগে">‹</button><div class="tabs scrollx" id="tabs" role="tablist"></div><button class="sla" data-d="1" aria-label="পরে">›</button></div>
   <div class="fbar" id="fbar" hidden>
     <label>সাজান <select id="fs"><option value="dl">বেশি ডাউনলোড</option><option value="new">নতুন</option><option value="rate">সর্বোচ্চ রেটিং</option><option value="comm">বেশি কমেন্ট</option><option value="view">বেশি ভিউ</option></select></label>
     <label>রেটিং <select id="fr"><option value="0">সব</option><option value="3">৩★ বা বেশি</option><option value="4">৪★ বা বেশি</option></select></label>
@@ -218,7 +219,7 @@ function card(m){
  th=m.cover_url?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="'+esc(m.title)+'">':'<svg><use href="#bus"/></svg>';
  return '<article class="card"><a class="th" href="mod.html?id='+m.id+'">'+(isNew(m)?'<span class="tag">নতুন</span>':'')+th+'</a><div class="body"><div class="cat">'+esc(c?c.name:"")+'</div><a class="t" href="mod.html?id='+m.id+'">'+esc(m.title)+'</a><div class="meta"><a class="un" href="profile.html?u='+esc(u.id||"")+'">'+(/^https?:\/\//i.test(u.avatar_url||"")?'<img class="av" src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+esc(u.display_name||"অজানা")+'</a> '+b+minisoc(u)+'</div><div class="dl"><span class="rt">★ '+(m.rating_count?avg(m).toFixed(1):"—")+'</span><span>⬇ '+fmt(m.downloads)+'</span><span>💬 '+fmt(m.comment_count)+'</span><span>👁 '+fmt(m.views)+'</span></div><div class="acts"><a class="btn p" href="mod.html?id='+m.id+'">ডাউনলোড</a></div></div></article>';
 }
-function row(title,L){return '<section><h2>'+title+'</h2><div class="grid">'+L.map(card).join("")+'</div></section>'}
+function row(title,L,mid){var hs=S.t=="all"||S.t=="top";return '<section><h2><span>'+title+'</span>'+(mid&&hs?'<button class="more" data-t="'+mid+'">সব দেখুন ›</button>':'')+'</h2><div class="grid'+(hs?' hs':'')+'">'+L.map(card).join("")+'</div></section>'}
 function avg(m){return m.rating_count?m.rating_sum/m.rating_count:0}
 function srt(a,b){
  var k=S.sort;
@@ -240,7 +241,7 @@ function sec(c){
  var L=S.mods.filter(function(m){return m.category_id==c.id&&flt(m)}).sort(srt);
  if(!L.length)return"";
  if(S.t=="all")L=L.slice(0,6);
- return row((S.t=="all"?"জনপ্রিয় ":"")+esc(c.name),L);
+ return row((S.t=="all"?"জনপ্রিয় ":"")+esc(c.name),L,c.id);
 }
 function draw(){
  $("games").innerHTML=S.games.map(function(g){return '<button class="chip" aria-pressed="'+(g.id==S.g)+'" data-g="'+g.id+'">'+img(g.image_url,g.name)+esc(g.name)+'</button>'}).join("");
@@ -269,6 +270,20 @@ async function showMe(sess){
 function initAuth(){
  $("login").onclick=function(){db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin}})};
  db.auth.onAuthStateChange(function(ev,sess){setTimeout(function(){showMe(sess)},0)});
+}
+function slider(box){
+ var w=box.parentNode;
+ function chk(){w.classList.toggle("l",box.scrollLeft>4);w.classList.toggle("r",box.scrollLeft+box.clientWidth<box.scrollWidth-4)}
+ box.addEventListener("scroll",chk,{passive:true});
+ window.addEventListener("resize",chk);
+ new MutationObserver(function(){setTimeout(chk,30)}).observe(box,{childList:true});
+ w.querySelectorAll(".sla").forEach(function(b){b.onclick=function(){box.scrollBy({left:+b.dataset.d*box.clientWidth*.7,behavior:"smooth"})}});
+ var down=false,sx=0,sl=0,moved=false;
+ box.addEventListener("pointerdown",function(e){if(e.pointerType!="mouse")return;down=true;moved=false;sx=e.clientX;sl=box.scrollLeft});
+ window.addEventListener("pointermove",function(e){if(!down)return;var dx=e.clientX-sx;if(Math.abs(dx)>5)moved=true;if(moved)box.scrollLeft=sl-dx});
+ window.addEventListener("pointerup",function(){down=false});
+ box.addEventListener("click",function(e){if(moved){e.preventDefault();e.stopPropagation();moved=false}},true);
+ setTimeout(chk,60);
 }
 function ytId(u){var m=/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/))([\w-]{11})/.exec(u||"");return m?m[1]:""}
 function okUrl(u){return /^https?:\/\//i.test(u||"")}
@@ -319,7 +334,9 @@ async function boot(){
 document.addEventListener("click",function(e){
  var a=e.target.closest("[data-g]"),b=e.target.closest("[data-t]");
  if(a&&a.dataset.g!=S.g){S.g=+a.dataset.g;S.q="";$("q").value="";loadGame()}
- if(b){S.t=(b.dataset.t=="all"||b.dataset.t=="top")?b.dataset.t:+b.dataset.t;draw()}
+ if(b){S.t=(b.dataset.t=="all"||b.dataset.t=="top")?b.dataset.t:+b.dataset.t;draw();
+  var at=document.querySelector("#tabs .tab[aria-selected=true]");if(at&&at.scrollIntoView)at.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"});
+  if(b.classList.contains("more"))window.scrollTo({top:Math.max(0,$("slt").offsetTop-90),behavior:"smooth"})}
  var so=e.target.closest("[data-s]");if(so){S.sort=so.dataset.s;draw()}
 });
 $("q").addEventListener("input",function(e){S.q=e.target.value;if(S.cats.length)draw()});
@@ -332,9 +349,11 @@ $("theme").addEventListener("click",function(){
  var cur=R.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),n=cur=="dark"?"light":"dark";
  R.dataset.theme=n;try{localStorage.setItem("t",n)}catch(e){}
 });
+slider($("games"));slider($("tabs"));
 (function(){var t="BUSSID X BSBD STORE",el=$("neon"),i=0;if(!el)return;if(matchMedia("(prefers-reduced-motion:reduce)").matches){el.textContent=t;el.classList.add("done");return}function f(){el.textContent=t.slice(0,i++);if(i<=t.length)setTimeout(f,85);else el.classList.add("done")}f()})();
 boot();
 </script>
+<script src="nav.js"></script>
 <script src="i18n.js"></script>
 </body>
 </html>
