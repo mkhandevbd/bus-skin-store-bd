@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>মড এডিট – Bus Skin Store BD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f3f6;--card:#fff;--text:#14181f;--muted:#5b6574;--line:#dfe3ea;--g:#0a7d5a;--gtext:#fff;--y:#ffc233;--chip:#e6eaf0;--red:#d92d3f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1218;--card:#171c25;--text:#eef1f6;--muted:#9aa4b4;--line:#262d3a;--g:#18b784;--gtext:#04120d;--chip:#212835}}
+:root[data-theme="dark"]{--bg:#0e1218;--card:#171c25;--text:#eef1f6;--muted:#9aa4b4;--line:#262d3a;--g:#18b784;--gtext:#04120d;--chip:#212835}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Hind Siliguri",system-ui,"Segoe UI",sans-serif;line-height:1.55}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--g)}
+:focus-visible{outline:2px solid var(--g);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:10px;padding:10px 0;max-width:1120px;margin:0 auto;padding-left:16px;padding-right:16px}
+.logo{flex:1;display:flex;align-items:center;gap:8px;font-weight:700;font-size:20px;text-decoration:none;color:var(--text)}
+.logo svg{width:34px;height:18px;--b:var(--g);--s:var(--y)}
+.rgb{background:linear-gradient(90deg,#ff2d55,#ff9500,#ffd60a,#30d158,#0a84ff,#bf5af2,#ff2d55);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:rgb 6s linear infinite}
+@keyframes rgb{to{background-position:300% 0}}
+.btn{position:relative;overflow:hidden;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 14px;cursor:pointer;font-weight:600;white-space:nowrap;text-decoration:none;color:var(--text);display:inline-block}
+.btn.p{background:var(--g);color:var(--gtext);border-color:var(--g)}
+.btn.p::after{content:"";position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent)}
+.btn.p:hover::after{transform:translateX(120%);transition:transform .6s}
+.btn.d{color:var(--red);border-color:var(--red)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.me{display:flex;align-items:center;gap:8px}.me img{width:30px;height:30px;border-radius:50%}
+.badge{position:relative;overflow:hidden;font-size:11px;font-weight:700;border-radius:6px;padding:0 6px;line-height:18px;color:#fff}
+.owner{background:#d92d3f;box-shadow:0 0 8px rgba(217,45,63,.7)}.moderator{background:#2563eb;box-shadow:0 0 8px rgba(37,99,235,.6)}.premium{background:#b7791f;box-shadow:0 0 8px rgba(183,121,31,.7)}.vip{background:#7c3aed;box-shadow:0 0 8px rgba(124,58,237,.7)}
+.badge::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:sh 2.4s infinite}
+@keyframes sh{to{transform:translateX(100%)}}
+h1{font-size:clamp(24px,4vw,32px);margin:22px 0 6px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;animation:fi .45s both}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}}
+.box h2{margin:0 0 10px;font-size:18px}
+.muted{color:var(--muted);font-size:14px}
+.rules{margin:0;padding-left:20px;color:var(--muted);font-size:14px}
+.form{display:grid;gap:12px}
+label{display:grid;gap:4px;font-weight:600;font-size:14px}
+input[type=text],input[type=url],select,textarea{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 10px;width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.two{grid-template-columns:1fr}}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}.row .grow{flex:1;min-width:150px}
+.pill{position:relative;overflow:hidden;font-size:12px;font-weight:700;border-radius:6px;padding:0 8px;line-height:20px;color:#fff;background:#6b7280}
+.pill.approved{background:#0a7d5a}.pill.rejected{background:#d92d3f}.pill.pending{background:#b7791f}
+.empty{padding:30px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#14181f;color:#fff;padding:10px 16px;border-radius:10px;z-index:20;max-width:90%}
+@media (prefers-reduced-motion:reduce){.rgb,.badge::after,.box{animation:none}}
+.pv{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.pv img{width:90px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.pv.big img{width:200px;height:120px}
+.upov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;z-index:50;padding:16px;backdrop-filter:blur(3px)}
+.upcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;max-width:360px;width:100%;text-align:center;animation:pop .3s both}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.upcard h3{margin:4px 0}
+.ring{position:relative;width:130px;height:130px;margin:0 auto 12px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:9}
+.ring .rb{stroke:var(--chip)}
+.ring .rf{stroke:var(--g);stroke-linecap:round;transition:stroke-dashoffset .25s}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:26px}
+.ring.spin svg{animation:upspin 1.1s linear infinite}
+@keyframes upspin{from{transform:rotate(-90deg)}to{transform:rotate(270deg)}}
+.ring.ok .rf{stroke:#16a34a}.ring.bad .rf{stroke:var(--red)}.ring.bad b{color:var(--red)}
+.ck{stroke-dasharray:1;stroke-dashoffset:1;animation:draw .5s .1s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.upbar{height:8px;background:var(--chip);border-radius:99px;overflow:hidden;margin-top:12px}
+.upbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g),var(--y));transition:width .25s}
+@media (prefers-reduced-motion:reduce){.ring.spin svg{animation:none}.upcard{animation:none}}
+.logoimg{height:34px;width:auto;max-width:130px;object-fit:contain}
+.kp{position:relative}
+.kp img{width:90px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block}
+.kp button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:var(--red);color:#fff;cursor:pointer;font-size:12px;line-height:22px;padding:0}
+.kp.off img{opacity:.3;filter:grayscale(1)}
+.kp.off button{background:#16a34a}
+.sts{display:flex;gap:10px;flex-wrap:wrap}
+.sts div{background:var(--bg);border:1px solid var(--line);border-top:3px solid var(--y);border-radius:12px;padding:6px 16px;min-width:90px}
+.sts b{display:block;font-size:20px;line-height:1.2}.sts span{font-size:13px;color:var(--muted)}
+.opt{display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;cursor:pointer}
+.curimg{max-width:220px;max-height:130px;border-radius:10px;border:1px solid var(--line);object-fit:cover}
+.sel{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 10px;width:100%;font:inherit;color:inherit}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="bus" viewBox="0 0 120 56"><rect x="4" y="6" width="112" height="38" rx="7" fill="var(--b)"/><rect x="4" y="30" width="112" height="7" fill="var(--s)"/><g fill="#dff3ff" opacity=".92"><rect x="12" y="12" width="16" height="14" rx="2"/><rect x="32" y="12" width="16" height="14" rx="2"/><rect x="52" y="12" width="16" height="14" rx="2"/><rect x="72" y="12" width="16" height="14" rx="2"/><rect x="94" y="12" width="16" height="20" rx="2"/></g><circle cx="30" cy="46" r="7" fill="#1a1d24"/><circle cx="92" cy="46" r="7" fill="#1a1d24"/><circle cx="30" cy="46" r="3" fill="#9aa4b4"/><circle cx="92" cy="46" r="3" fill="#9aa4b4"/></symbol></svg>
+<header><div class="bar">
+  <a class="logo" id="logo" href="index.html"><svg><use href="#bus"/></svg><span class="rgb">Bus Skin Store BD</span></a>
+  <button class="btn" id="lang" aria-label="Language">EN</button>
+  <button class="btn" id="theme" aria-label="থিম বদলান">🌓</button>
+  <div class="me" id="me" hidden></div>
+</div></header>
+<main class="wrap" id="app"><div class="empty" style="margin-top:30px">লোড হচ্ছে...</div></main>
+<div id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="fp.js"></script>
+<script>
+var $=function(i){return document.getElementById(i)},
+esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
+BADGE={owner:"Owner",moderator:"Moderator",premium:"Premium",vip:"VIP"},
+ST={pending:"অপেক্ষমাণ",approved:"অ্যাপ্রুভড",rejected:"বাতিল"},
+MAXP=8,MAXMB=5,db,ME,M=null,G=[],C=[],KEEP=[],STAFF=false,WURL="";
+
+function note(t){var n=$("toast");n.textContent=t;n.hidden=false;clearTimeout(note.t);note.t=setTimeout(function(){n.hidden=true},4500)}
+function badge(r){return BADGE[r]?'<span class="badge '+esc(r)+'">'+BADGE[r]+'</span>':""}
+function okLink(v){return !v||/^https?:\/\//i.test(v)}
+var WURL="";
+async function wurl(){
+ if(WURL)return WURL;
+ var r=await db.from("site_settings").select("worker_url").eq("id",1).maybeSingle();
+ WURL=((r.data&&r.data.worker_url)||"").replace(/\/+$/,"");
+ return WURL;
+}
+function badge(r){return BADGE[r]?'<span class="badge '+esc(r)+'">'+BADGE[r]+'</span>':""}
+function okLink(v){return !v||/^https?:\/\//i.test(v)}
+var WURL="";
+async function wurl(){
+ if(WURL)return WURL;
+ var r=await db.from("site_settings").select("worker_url").eq("id",1).maybeSingle();
+ WURL=((r.data&&r.data.worker_url)||"").replace(/\/+$/,"");
+ return WURL;
+}
+function okLink(v){return !v||/^https?:\/\//i.test(v)}
+var WURL="";
+async function wurl(){
+ if(WURL)return WURL;
+ var r=await db.from("site_settings").select("worker_url").eq("id",1).maybeSingle();
+ WURL=((r.data&&r.data.worker_url)||"").replace(/\/+$/,"");
+ return WURL;
+}
+async function wurl(){
+ if(WURL)return WURL;
+ var r=await db.from("site_settings").select("worker_url").eq("id",1).maybeSingle();
+ WURL=((r.data&&r.data.worker_url)||"").replace(/\/+$/,"");
+ return WURL;
+}
+async function wpost(path,file,onp,onsent){
+ var w=await wurl();if(!w)throw new Error("সার্ভারের লিংক সেট করা হয়নি");
+ var s=(await db.auth.getSession()).data.session;if(!s)throw new Error("আবার লগইন করুন");
+ return new Promise(function(res,rej){
+  var x=new XMLHttpRequest();
+  x.open("POST",w+path);
+  x.setRequestHeader("Authorization","Bearer "+s.access_token);
+  x.setRequestHeader("Content-Type",file.type||"application/octet-stream");
+  x.setRequestHeader("X-File-Name",encodeURIComponent(file.name));
+  x.upload.onprogress=function(e){if(onp&&e.lengthComputable)onp(e.loaded/e.total)};
+  x.upload.onload=function(){if(onsent)onsent()};
+  x.onload=function(){var j={};try{j=JSON.parse(x.responseText)}catch(e){}if(x.status>=200&&x.status<300)res(j);else rej(new Error(j.error||"আপলোড ব্যর্থ হয়েছে"))};
+  x.onerror=function(){rej(new Error("নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন"))};
+  x.send(file);
+ });
+}
+async function up(file){return (await wpost("/img",file)).url}
+function loginBox(){
+ $("app").innerHTML='<div class="box" style="margin-top:30px;text-align:center"><h2>মড আপলোড করতে লগইন করুন</h2><p class="muted">গুগল অ্যাকাউন্ট দিয়ে এক ক্লিকে লগইন হবে।</p><button class="btn p" id="gl">গুগল দিয়ে লগইন</button></div>';
+ $("gl").onclick=function(){db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname}})};
+}
+function prev(inp,box,max){
+ var el=$(inp),b=$(box);if(!el||!b)return;
+ el.addEventListener("change",function(){
+  b.innerHTML="";
+  [].slice.call(el.files).slice(0,max).forEach(function(f){
+   if(!/^image\//.test(f.type))return;
+   var i=document.createElement("img");i.src=URL.createObjectURL(f);i.alt="";b.appendChild(i);
+  });
+ });
+}
+function fileInfo(inp,box){
+ var el=$(inp),b=$(box);if(!el||!b)return;
+ el.addEventListener("change",function(){
+  var f=el.files[0];if(!f){b.textContent="";return}
+  var mb=f.size/1048576;
+  b.textContent=f.name+" · "+mb.toFixed(1)+" MB"+(mb>20?" (২০ MB-এর বেশি, তাই Google Drive লিংক দিন)":"");
+ });
+}
+function upUI(){
+ var o=document.createElement("div");o.className="upov";
+ o.innerHTML='<div class="upcard"><div class="ring" id="upr"><svg viewBox="0 0 120 120"><circle class="rb" cx="60" cy="60" r="52"/><circle class="rf" id="upf" cx="60" cy="60" r="52"/></svg><b id="upp">0%</b></div><h3 id="upt">আপলোড হচ্ছে...</h3><p class="muted" id="ups"></p><div class="upbar"><i id="upb"></i></div><button class="btn p" id="upc" hidden style="margin-top:14px">ঠিক আছে</button></div>';
+ document.body.appendChild(o);
+ var C=2*Math.PI*52,f=$("upf"),r=$("upr");
+ f.style.strokeDasharray=C;f.style.strokeDashoffset=C;
+ return {
+  set:function(p,t){p=Math.max(0,Math.min(1,p));r.classList.remove("spin");f.style.strokeDashoffset=C*(1-p);$("upp").textContent=Math.round(p*100)+"%";$("upb").style.width=(p*100)+"%";if(t)$("ups").textContent=t},
+  spin:function(t){r.classList.add("spin");if(t)$("ups").textContent=t},
+  done:function(title,t,cb){r.classList.remove("spin");r.classList.add("ok");f.style.strokeDashoffset=0;$("upb").style.width="100%";$("upp").innerHTML='<svg viewBox="0 0 24 24" width="58" height="58"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="ck"/></svg>';$("upt").textContent=title;$("ups").textContent=t||"";var c=$("upc");c.hidden=false;c.onclick=function(){o.remove();if(cb)cb()}},
+  fail:function(t,cb){r.classList.remove("spin");r.classList.add("bad");$("upp").textContent="✖";$("upt").textContent="আপলোড হয়নি";$("ups").textContent=t||"";var c=$("upc");c.hidden=false;c.textContent="বন্ধ করুন";c.onclick=function(){o.remove();if(cb)cb()}}
+ };
+}
+
+function avg(m){return m.rating_count?(m.rating_sum/m.rating_count).toFixed(1):"—"}
+function fmt(n){n=n||0;return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":String(n)}
+function loginBox(){
+ $("app").innerHTML='<div class="box" style="margin-top:30px;text-align:center"><h2>এডিট করতে লগইন করুন</h2><button class="btn p" id="gl">গুগল দিয়ে লগইন</button></div>';
+ $("gl").onclick=function(){db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname+location.search}})};
+}
+function msg(t){$("app").innerHTML='<div class="empty" style="margin-top:30px">'+esc(t)+' <a href="index.html">হোমে ফিরুন</a></div>'}
+async function init(){
+ if(typeof SUPABASE_URL=="undefined"||SUPABASE_URL.indexOf("supabase.co")<0){msg("config.js-এ Supabase URL ও কী বসাতে হবে।");return}
+ db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ db.from("site_settings").select("logo_url").eq("id",1).maybeSingle().then(function(r){var u=r.data&&r.data.logo_url;if(/^https?:\/\//i.test(u||"")){var sv=$("logo").querySelector("svg");if(sv)sv.outerHTML='<img class="logoimg" src="'+esc(u)+'" alt="">'}});
+ var id=+(new URLSearchParams(location.search).get("id")||0);
+ var s=(await db.auth.getSession()).data.session;
+ if(!s){loginBox();return}
+ var p=await db.from("profiles").select("id,display_name,avatar_url,role").eq("id",s.user.id).single();
+ if(p.error||!p.data){msg("প্রোফাইল পাওয়া যায়নি।");return}
+ ME=p.data;STAFF=ME.role=="owner"||ME.role=="moderator";
+ $("me").innerHTML=(ME.avatar_url?'<img src="'+esc(ME.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+badge(ME.role)+'<a class="btn" href="profile.html">প্রোফাইল</a><button class="btn" id="lo">লগআউট</button>';$("me").hidden=false;
+ $("lo").onclick=async function(){await db.auth.signOut();location.reload()};
+ if(!id){msg("মড পাওয়া যায়নি।");return}
+ var r=await db.from("mods").select("*").eq("id",id).maybeSingle();
+ if(r.error||!r.data){msg("মড পাওয়া যায়নি বা আপনার অনুমতি নেই।");return}
+ M=r.data;
+ if(M.uploader_id!=ME.id&&!STAFF){msg("এই মড এডিট করার অনুমতি আপনার নেই।");return}
+ var q=await Promise.all([db.from("games").select("id,name").order("sort_order"),db.from("categories").select("id,name,game_id").order("sort_order")]);
+ G=q[0].data||[];C=q[1].data||[];KEEP=(M.previews||[]).filter(function(u){return /^https?:\/\//i.test(u)});
+ render();
+}
+function render(){
+ var m=M,cur=m.dl_kind=="tg"?"Telegram ফাইল"+(m.file_size?" ("+(m.file_size/1048576).toFixed(1)+" MB)":""):m.dl_kind=="drive"?"Google Drive লিংক (গোপন রাখা আছে)":(m.alt_link?"পুরনো লিংক":"নেই");
+ $("app").innerHTML='<h1>মড এডিট করুন</h1>'+
+ '<div class="box"><div class="sts"><div><b><span class="pill '+esc(m.status)+'" style="font-size:13px">'+esc(ST[m.status]||m.status)+'</span></b><span>অবস্থা</span></div><div><b>'+fmt(m.downloads)+'</b><span>ডাউনলোড</span></div><div><b>'+fmt(m.views)+'</b><span>ভিজিটর</span></div><div><b>★ '+avg(m)+'</b><span>রেটিং ('+(m.rating_count||0)+')</span></div><div><b>'+fmt(m.comment_count)+'</b><span>কমেন্ট</span></div></div>'+
+ '<p class="muted" style="margin:10px 0 0"><a href="mod.html?id='+m.id+'">মডের পেজ দেখুন</a>'+(STAFF?"":' · ⚠️ এডিট করলে মডটি আবার অ্যাপ্রুভের জন্য অপেক্ষমাণ হবে।')+'</p></div>'+
+ '<div class="box"><div class="form">'+
+ '<div class="two"><label>গেম<select id="g" class="sel">'+G.map(function(g){return '<option value="'+g.id+'"'+(g.id==m.game_id?" selected":"")+'>'+esc(g.name)+'</option>'}).join("")+'</select></label><label>ক্যাটাগরি<select id="c" class="sel"></select></label></div>'+
+ '<label>মডের নাম *<input type="text" id="t" maxlength="120" value="'+esc(m.title)+'"></label>'+
+ '<label>বিবরণ<textarea id="d" rows="4" maxlength="1500">'+esc(m.description||"")+'</textarea></label>'+
+ '<label>বর্তমান মেইন ছবি'+(/^https?:\/\//i.test(m.cover_url||"")?'<img class="curimg" src="'+esc(m.cover_url)+'" alt="">':'<span class="muted">নেই</span>')+'</label>'+
+ '<label>নতুন মেইন ছবি (না দিলে আগেরটাই থাকবে)<input type="file" id="mf" accept="image/png,image/jpeg,image/webp"><div class="pv big" id="pvm"></div></label>'+
+ '<label>বর্তমান প্রিভিউ ছবি (✕ চাপলে বাদ যাবে)<div class="pv" id="keep"></div></label>'+
+ '<label>নতুন প্রিভিউ ছবি যোগ করুন (একসাথে একাধিক)<input type="file" id="mp" accept="image/png,image/jpeg,image/webp" multiple><div class="pv" id="pvp"></div></label>'+
+ '<div class="two"><label>গেম ভার্সন (ঐচ্ছিক)<input type="text" id="v" maxlength="40" value="'+esc(m.game_version||"")+'"></label><label>মূল নির্মাতার নাম (ঐচ্ছিক)<input type="text" id="n" maxlength="80" value="'+esc(m.credit_name||"")+'"></label></div>'+
+ '<label>YouTube প্রিভিউ ভিডিও লিংক (ঐচ্ছিক)<input type="url" id="vd" value="'+esc(m.video_url||"")+'" placeholder="https://www.youtube.com/watch?v=..."></label>'+
+ '<label>ডাউনলোড গাইড (ঐচ্ছিক, কীভাবে ইনস্টল করবেন)<textarea id="i" rows="3" maxlength="1500">'+esc(m.install_steps||"")+'</textarea></label>'+
+ '<label>Facebook লিংক<input type="url" id="sf" value="'+esc(m.social_facebook||"")+'" placeholder="https://"></label>'+
+ '<label>YouTube লিংক<input type="url" id="sy" value="'+esc(m.social_youtube||"")+'" placeholder="https://"></label>'+
+ '<label>Telegram লিংক<input type="url" id="st" value="'+esc(m.social_telegram||"")+'" placeholder="https://"></label>'+
+ '<div><b style="font-size:14px">মডের ফাইল</b><div class="muted" style="margin:2px 0 8px">বর্তমান: '+esc(cur)+'</div>'+
+ '<label class="opt"><input type="radio" name="dk" value="keep" checked> আগেরটাই থাকুক</label>'+
+ '<label class="opt"><input type="radio" name="dk" value="file"> নতুন ফাইল আপলোড করব (সর্বোচ্চ ২০ MB)</label>'+
+ '<label class="opt"><input type="radio" name="dk" value="drive"> নতুন Google Drive লিংক দেব</label>'+
+ '<div id="dkf" hidden style="margin-top:8px"><label>নতুন ফাইল<input type="file" id="fl"><div class="muted" id="fi"></div></label></div>'+
+ '<div id="dkd" hidden style="margin-top:8px"><label>Google Drive লিংক<input type="url" id="l" placeholder="https://drive.google.com/..."></label></div></div>'+
+ '<button class="btn p" id="send">সেভ করুন</button><button class="btn d" id="del" type="button">মড মুছে ফেলুন</button></div></div>';
+ var fill=function(){$("c").innerHTML=C.filter(function(c){return c.game_id==$("g").value}).map(function(c){return '<option value="'+c.id+'"'+(c.id==M.category_id?" selected":"")+'>'+esc(c.name)+'</option>'}).join("")};
+ $("g").onchange=fill;fill();
+ drawKeep();prev("mf","pvm",1);prev("mp","pvp",MAXP);fileInfo("fl","fi");
+ document.querySelectorAll('input[name="dk"]').forEach(function(r){r.onchange=function(){var v=document.querySelector('input[name="dk"]:checked').value;$("dkf").hidden=v!="file";$("dkd").hidden=v!="drive"}});
+ $("send").onclick=save;$("del").onclick=del;
+}
+function drawKeep(){
+ $("keep").innerHTML=(M.previews||[]).filter(function(u){return /^https?:\/\//i.test(u)}).map(function(u,i){var on=KEEP.indexOf(u)>-1;return '<div class="kp'+(on?"":" off")+'"><img src="'+esc(u)+'" alt=""><button type="button" data-k="'+i+'" aria-label="বাদ দিন">'+(on?"✕":"↺")+'</button></div>'}).join("")||'<span class="muted">নেই</span>';
+}
+document.addEventListener("click",function(e){
+ var b=e.target.closest("[data-k]");if(!b)return;
+ var all=(M.previews||[]).filter(function(u){return /^https?:\/\//i.test(u)}),u=all[+b.dataset.k],i=KEEP.indexOf(u);
+ if(i>-1)KEEP.splice(i,1);else KEEP.push(u);
+ drawKeep();
+});
+async function save(){
+ var t=$("t").value.trim(),cat=+$("c").value,mode=document.querySelector('input[name="dk"]:checked').value,fl=$("fl")&&$("fl").files[0],dl=$("l")?$("l").value.trim():"",mf=$("mf").files[0],pf=[].slice.call($("mp").files);
+ if(!t||!cat){note("মডের নাম ও ক্যাটাগরি দিন");return}
+ if(KEEP.length+pf.length>MAXP){note("প্রিভিউ ছবি সর্বোচ্চ "+MAXP+"টি রাখা যাবে");return}
+ if(mode=="file"){if(!fl){note("নতুন ফাইল বাছুন");return}if(fl.size>20*1048576){note("ফাইল ২০ MB-এর বেশি, তাই Google Drive লিংক দিন");return}}
+ if(mode=="drive"&&!/^https:\/\/(drive|docs)\.google\.com\//i.test(dl)){note("শুধু Google Drive লিংক চলবে");return}
+ var soc=[$("sf").value.trim(),$("sy").value.trim(),$("st").value.trim()];
+ if(!soc.every(okLink)){note("সোশ্যাল লিংক https:// দিয়ে শুরু হতে হবে");return}
+ var vd=$("vd").value.trim();
+ if(vd&&!/^https?:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//i.test(vd)){note("ভিডিও লিংক YouTube-এর হতে হবে");return}
+ if((mf?[mf]:[]).concat(pf).some(function(f){return f.size>MAXMB*1048576})){note("প্রতিটি ছবি "+MAXMB+" MB-এর কম হতে হবে");return}
+ var b=$("send");b.disabled=true;
+ var total=(mf?mf.size:0)+pf.reduce(function(a,f){return a+f.size},0)+(mode=="file"?fl.size:0)||1,done=0,ui=upUI();
+ async function run(file,path,label,srv){
+  ui.set(done/total*.96,label);
+  var j=await wpost(path,file,function(p){ui.set((done+p*file.size)/total*.96,label)},function(){ui.spin(srv||label)});
+  done+=file.size;return j;
+ }
+ try{
+  var cover=M.cover_url;
+  if(mf)cover=(await run(mf,"/img","নতুন মেইন ছবি আপলোড হচ্ছে...")).url;
+  var pv=KEEP.slice();
+  for(var i=0;i<pf.length;i++)pv.push((await run(pf[i],"/img","প্রিভিউ ছবি "+(i+1)+"/"+pf.length+" আপলোড হচ্ছে...")).url);
+  var fj=null;
+  if(mode=="file")fj=await run(fl,"/file","মডের ফাইল আপলোড হচ্ছে ("+(fl.size/1048576).toFixed(1)+" MB)...","Telegram-এ ফাইল সংরক্ষণ হচ্ছে, একটু অপেক্ষা করুন...");
+  ui.set(.97,"তথ্য সংরক্ষণ হচ্ছে...");ui.spin("তথ্য সংরক্ষণ হচ্ছে...");
+  var upd={game_id:+$("g").value,category_id:cat,title:t,description:$("d").value.trim()||null,cover_url:cover,previews:pv,video_url:vd||null,game_version:$("v").value.trim()||null,install_steps:$("i").value.trim()||null,credit_name:$("n").value.trim()||null,social_facebook:soc[0]||null,social_youtube:soc[1]||null,social_telegram:soc[2]||null};
+  if(mode=="file"){upd.dl_kind="tg";upd.file_size=fl.size}
+  if(mode=="drive"){upd.dl_kind="drive";upd.file_size=null}
+  if(mode!="keep"){
+   var sec=mode=="file"?{mod_id:M.id,tg_bot_id:fj.bot_id,tg_file_id:fj.file_id,file_name:fj.name,drive_link:null}:{mod_id:M.id,drive_link:dl,tg_bot_id:null,tg_file_id:null,file_name:null};
+   var s1=await db.from("mod_secrets").insert(sec);
+   if(s1.error){
+    if(/duplicate|23505/i.test((s1.error.message||"")+(s1.error.code||""))){var s2=await db.from("mod_secrets").update(sec).eq("mod_id",M.id);if(s2.error)throw s2.error}
+    else throw s1.error;
+   }
+  }
+  var r=await db.from("mods").update(upd).eq("id",M.id);
+  if(r.error)throw r.error;
+  ui.done("সেভ হয়েছে! ✨",STAFF?"পরিবর্তন সাথে সাথে সাইটে দেখা যাবে।":"মডটি আবার অ্যাপ্রুভের জন্য অপেক্ষমাণ আছে।",function(){location.href=STAFF?"admin.html":"profile.html"});
+ }catch(e){b.disabled=false;ui.fail(e.message||String(e))}
+}
+async function del(){
+ if(!confirm("এই মড চিরতরে মুছে ফেলবেন? এর রেটিং ও কমেন্টও মুছে যাবে।"))return;
+ var r=await db.from("mods").delete().eq("id",M.id);
+ if(r.error){note("মোছা যায়নি: "+r.error.message);return}
+ note("মড মুছে গেছে");
+ setTimeout(function(){location.href=STAFF?"admin.html":"profile.html"},800);
+}
+var R=document.documentElement;
+try{var s0=localStorage.getItem("t");if(s0)R.dataset.theme=s0}catch(e){}
+$("theme").onclick=function(){var cur=R.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),n=cur=="dark"?"light":"dark";R.dataset.theme=n;try{localStorage.setItem("t",n)}catch(e){}};
+init();
+</script>
+<script src="i18n.js"></script>
+</body>
+</html>

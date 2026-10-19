@@ -89,6 +89,7 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
+<script src="fp.js"></script>
 <script>
 var $=function(i){return document.getElementById(i)},
 esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
@@ -204,13 +205,13 @@ async function pAp(){
 }
 async function listMods(){
  var st=$("fs").value,l=$("list");l.innerHTML='<div class="muted">লোড হচ্ছে...</div>';
- var r=await db.from("mods").select("id,title,status,alt_link,created_at,category_id,game_id,uploader:profiles!uploader_id(display_name,role)").eq("status",st).order("created_at",{ascending:false}).limit(100);
+ var r=await db.from("mods").select("id,title,status,alt_link,created_at,category_id,game_id,downloads,views,uploader:profiles!uploader_id(display_name,role)").eq("status",st).order("created_at",{ascending:false}).limit(100);
  if(r.error){err(r.error);return}
  if(!r.data.length){l.innerHTML='<div class="empty">এই অবস্থায় কোনো মড নেই।</div>';return}
  l.innerHTML=r.data.map(function(m){
   var c=C.find(function(x){return x.id==m.category_id}),u=m.uploader||{};
-  var b=(m.status=="pending"?'<button class="btn p" data-a="ok" data-id="'+m.id+'">অ্যাপ্রুভ</button><button class="btn" data-a="no" data-id="'+m.id+'">বাতিল</button>':"")+'<button class="btn d" data-a="del" data-id="'+m.id+'">মুছুন</button>';
-  return '<div class="row"><div class="grow"><b>'+esc(m.title)+'</b><div class="muted">'+esc(c?c.name:"")+' · '+esc(u.display_name||"অজানা")+' '+pill(u.role)+(/^https?:\/\//i.test(m.alt_link||"")?' · <a href="'+esc(m.alt_link)+'" target="_blank" rel="noopener noreferrer">লিংক</a>':"")+' · <a href="mod.html?id='+m.id+'" target="_blank">দেখুন</a></div></div>'+b+'</div>';
+  var b=(m.status=="pending"?'<button class="btn p" data-a="ok" data-id="'+m.id+'">অ্যাপ্রুভ</button><button class="btn" data-a="no" data-id="'+m.id+'">বাতিল</button>':"")+'<a class="btn" href="edit.html?id='+m.id+'">এডিট</a><button class="btn d" data-a="del" data-id="'+m.id+'">মুছুন</button>';
+  return '<div class="row"><div class="grow"><b>'+esc(m.title)+'</b><div class="muted">'+esc(c?c.name:"")+' · '+esc(u.display_name||"অজানা")+' '+pill(u.role)+(/^https?:\/\//i.test(m.alt_link||"")?' · <a href="'+esc(m.alt_link)+'" target="_blank" rel="noopener noreferrer">লিংক</a>':"")+' · <a href="mod.html?id='+m.id+'" target="_blank">দেখুন</a> · ⬇ '+(m.downloads||0)+' · 👁 '+(m.views||0)+'</div></div>'+b+'</div>';
  }).join("");
 }
 

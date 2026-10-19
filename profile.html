@@ -71,6 +71,18 @@ input[type=text],input[type=url],textarea{border:1px solid var(--line);backgroun
 .empty{padding:30px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#14181f;color:#fff;padding:10px 16px;border-radius:10px;z-index:20;max-width:90%}
 @media (prefers-reduced-motion:reduce){.rgb,.badge::after,.avr::before,.box,.rc{animation:none}}
+.btn.d{color:var(--red);border-color:var(--red)}
+.mrow{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:12px;margin:0 -6px;border-top:1px solid var(--line);border-radius:12px;transition:background .15s,transform .15s;animation:fi .4s both}
+.mrow:first-of-type{border-top:0}
+.mrow:hover{background:color-mix(in srgb,var(--g) 7%,transparent);transform:translateX(3px)}
+.mth{flex:0 0 96px;height:64px;border-radius:10px;overflow:hidden;background:var(--chip);display:grid;place-items:center}
+.mth img{width:100%;height:100%;object-fit:cover}
+.mi{flex:1;min-width:200px}
+.mt{font-weight:700;color:var(--text);text-decoration:none;font-size:17px}.mt:hover{color:var(--g)}
+.pl{font-size:12px;font-weight:700;border-radius:6px;padding:0 8px;line-height:20px;color:#fff;background:#b7791f;vertical-align:middle}
+.pl.approved{background:#0a7d5a}.pl.rejected{background:#d92d3f}
+.ms{display:flex;gap:6px 14px;flex-wrap:wrap;color:var(--muted);font-size:14px;margin-top:4px}
+.ma{display:flex;gap:6px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -86,6 +98,7 @@ input[type=text],input[type=url],textarea{border:1px solid var(--line);backgroun
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
+<script src="fp.js"></script>
 <script>
 var $=function(i){return document.getElementById(i)},
 esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
@@ -129,16 +142,35 @@ async function init(){
  if(!id){loginBox();return}
  if(ME&&ME.id==id)T=ME;
  else{var r=await db.from("profiles").select(COLS).eq("id",id).maybeSingle();if(r.error||!r.data){$("app").innerHTML='<div class="empty" style="margin-top:30px">এই প্রোফাইল পাওয়া যায়নি। <a href="index.html">হোমে ফিরুন</a></div>';return}T=r.data}
- var q=db.from("mods").select("id,title,cover_url,downloads,status,created_at").eq("uploader_id",id).order("created_at",{ascending:false}).limit(60);
+ var q=db.from("mods").select("id,title,cover_url,downloads,views,rating_sum,rating_count,comment_count,status,created_at").eq("uploader_id",id).order("created_at",{ascending:false}).limit(60);
  if(!(ME&&ME.id==id))q=q.eq("status","approved");
  var m=await q;MODS=m.data||[];
  render();
 }
+var SX={approved:"অ্যাপ্রুভড",pending:"অপেক্ষমাণ",rejected:"বাতিল"};
+function mrow(m){
+ var r=m.rating_count?(m.rating_sum/m.rating_count).toFixed(1):"—",d="";
+ try{d=new Date(m.created_at).toLocaleDateString("bn-BD",{day:"numeric",month:"short",year:"numeric"})}catch(e){}
+ return '<div class="mrow"><a class="mth" href="mod.html?id='+m.id+'">'+(ok(m.cover_url)?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="">':'<svg style="width:70%;--b:var(--g);--s:var(--y)"><use href="#bus"/></svg>')+'</a><div class="mi"><a class="mt" href="mod.html?id='+m.id+'">'+esc(m.title)+'</a> <span class="pl '+esc(m.status)+'">'+esc(SX[m.status]||m.status)+'</span><div class="ms"><span>⬇ '+fmt(m.downloads)+' ডাউনলোড</span><span>👁 '+fmt(m.views)+' ভিজিটর</span><span>★ '+r+' ('+(m.rating_count||0)+')</span><span>💬 '+fmt(m.comment_count)+'</span><span>🗓 '+esc(d)+'</span></div></div><div class="ma"><a class="btn" href="mod.html?id='+m.id+'">দেখুন</a><a class="btn p" href="edit.html?id='+m.id+'">এডিট</a><button class="btn d" data-pdel="'+m.id+'">মুছুন</button></div></div>';
+}
+document.addEventListener("click",async function(e){
+ var b=e.target.closest("[data-pdel]");if(!b)return;
+ if(!confirm("এই মড চিরতরে মুছে ফেলবেন? এর রেটিং ও কমেন্টও মুছে যাবে।"))return;
+ var r=await db.from("mods").delete().eq("id",b.dataset.pdel);
+ if(r.error){note("মোছা যায়নি: "+r.error.message);return}
+ MODS=MODS.filter(function(m){return m.id!=b.dataset.pdel});note("মুছে গেছে");render();
+});
 function render(){
  var own=ME&&T&&ME.id==T.id,ap=MODS.filter(function(m){return m.status=="approved"}),dl=ap.reduce(function(a,m){return a+(m.downloads||0)},0);
  var h='<div class="box"><div class="pf"><div class="avr">'+(ok(T.avatar_url)?'<img src="'+esc(T.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'<div class="ph"></div>')+'</div><div><div class="nm">'+esc(T.display_name||"নামহীন")+' '+badge(T.role)+'</div>'+(T.bio?'<div class="bio">'+esc(T.bio).replace(/\n/g,"<br>")+'</div>':(own?'<div class="muted">নিজের সম্পর্কে কিছু লিখুন (নিচে এডিট করুন)</div>':""))+'<div class="socs">'+soc(T)+'</div><div class="stats"><div><b>'+ap.length+'</b><span>মড</span></div><div><b>'+fmt(dl)+'</b><span>ডাউনলোড</span></div><div><b style="font-size:15px">'+esc(dt(T.created_at))+'</b><span>যোগ দিয়েছেন</span></div></div></div></div></div>';
  if(own)h+='<div class="box"><h2>প্রোফাইল এডিট করুন</h2><div class="form"><label>আপনার নাম<input type="text" id="pn" maxlength="60" value="'+esc(T.display_name||"")+'"></label><label>প্রোফাইল ছবি (PNG/JPG/WEBP, ৫ MB-এর কম)<input type="file" id="pa" accept="image/png,image/jpeg,image/webp"><div class="prev" id="pp"></div></label><label>পরিচিতি (সর্বোচ্চ ৩০০ অক্ষর)<textarea id="pb" rows="3" maxlength="300">'+esc(T.bio||"")+'</textarea></label><label>Facebook লিংক<input type="url" id="pf" placeholder="https://" value="'+esc(T.social_facebook||"")+'"></label><label>YouTube লিংক<input type="url" id="py" placeholder="https://" value="'+esc(T.social_youtube||"")+'"></label><label>Telegram লিংক<input type="url" id="pt" placeholder="https://" value="'+esc(T.social_telegram||"")+'"></label><button class="btn p" id="psave">সেভ করুন</button></div></div>';
- h+='<div class="box"><h2>'+(own?"আমার মড":"মড")+'</h2>'+(MODS.length?'<div class="grid">'+MODS.map(function(m){return '<a class="rc" href="mod.html?id='+m.id+'">'+(m.status!="approved"?'<span class="pill '+esc(m.status)+'">'+esc(ST[m.status]||m.status)+'</span>':"")+'<div class="rt">'+(ok(m.cover_url)?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="">':'<svg style="width:60%;--b:var(--g);--s:var(--y)"><use href="#bus"/></svg>')+'</div><div class="rb">'+esc(m.title)+'<small>⬇ '+fmt(m.downloads)+'</small></div></a>'}).join("")+'</div>':'<div class="empty">এখনো কোনো মড নেই।</div>')+'</div>';
+ if(own){
+  var vw=MODS.reduce(function(a,m){return a+(m.views||0)},0),rc=MODS.reduce(function(a,m){return a+(m.rating_count||0)},0),rs=MODS.reduce(function(a,m){return a+(m.rating_sum||0)},0),cn=function(x){return MODS.filter(function(m){return m.status==x}).length};
+  h+='<div class="box"><h2>আমার আপলোডের হিসাব</h2><div class="stats"><div><b>'+MODS.length+'</b><span>মোট আপলোড</span></div><div><b>'+cn("approved")+'</b><span>অ্যাপ্রুভড</span></div><div><b>'+cn("pending")+'</b><span>অপেক্ষমাণ</span></div><div><b>'+cn("rejected")+'</b><span>বাতিল</span></div><div><b>'+fmt(dl)+'</b><span>মোট ডাউনলোড</span></div><div><b>'+fmt(vw)+'</b><span>মোট ভিজিটর</span></div><div><b>'+(rc?(rs/rc).toFixed(1):"—")+'</b><span>গড় রেটিং</span></div></div></div>';
+  h+='<div class="box"><h2>আমার মড</h2>'+(MODS.length?MODS.map(mrow).join(""):'<div class="empty">এখনো কোনো মড নেই। <a href="upload.html">প্রথম মড আপলোড করুন</a></div>')+'</div>';
+ }else{
+  h+='<div class="box"><h2>মড</h2>'+(MODS.length?'<div class="grid">'+MODS.map(function(m){return '<a class="rc" href="mod.html?id='+m.id+'"><div class="rt">'+(ok(m.cover_url)?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="">':'<svg style="width:60%;--b:var(--g);--s:var(--y)"><use href="#bus"/></svg>')+'</div><div class="rb">'+esc(m.title)+'<small>⬇ '+fmt(m.downloads)+' · 👁 '+fmt(m.views)+'</small></div></a>'}).join("")+'</div>':'<div class="empty">এখনো কোনো মড নেই।</div>')+'</div>';
+ }
  $("app").innerHTML=h;
  document.title=(T.display_name||"প্রোফাইল")+" – Bus Skin Store BD";
  if(own){

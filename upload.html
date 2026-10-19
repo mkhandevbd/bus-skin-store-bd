@@ -75,6 +75,9 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 .upbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g),var(--y));transition:width .25s}
 @media (prefers-reduced-motion:reduce){.ring.spin svg{animation:none}.upcard{animation:none}}
 .logoimg{height:34px;width:auto;max-width:130px;object-fit:contain}
+h1{background:linear-gradient(90deg,var(--g),#0a84ff,#bf5af2,var(--g));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:rgb 6s linear infinite}
+.box{transition:transform .2s,box-shadow .2s}.box:hover{box-shadow:0 8px 26px rgba(0,0,0,.08)}
+.form label{transition:transform .15s}
 </style>
 </head>
 <body>
@@ -90,6 +93,7 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
+<script src="fp.js"></script>
 <script>
 var $=function(i){return document.getElementById(i)},
 esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
@@ -244,7 +248,7 @@ async function mine(){
  if(!r.data.length){l.innerHTML='<div class="empty">এখনো কোনো মড জমা দেননি।</div>';return}
  l.className="";
  l.innerHTML=r.data.map(function(m){
-  return '<div class="row"><div class="grow"><a href="mod.html?id='+m.id+'"><b>'+esc(m.title)+'</b></a>'+(m.status=="rejected"&&m.reject_reason?'<div class="muted">কারণ: '+esc(m.reject_reason)+'</div>':"")+'</div><span class="pill '+esc(m.status)+'">'+esc(ST[m.status]||m.status)+'</span>'+(m.status!="approved"?'<button class="btn d" data-del="'+m.id+'">মুছুন</button>':"")+'</div>';
+  return '<div class="row"><div class="grow"><a href="mod.html?id='+m.id+'"><b>'+esc(m.title)+'</b></a>'+(m.status=="rejected"&&m.reject_reason?'<div class="muted">কারণ: '+esc(m.reject_reason)+'</div>':"")+'</div><span class="pill '+esc(m.status)+'">'+esc(ST[m.status]||m.status)+'</span>'+(m.status!="approved"?'<button class="btn d" data-del="'+m.id+'">মুছুন</button>':"")+'<a class="btn" href="edit.html?id='+m.id+'">এডিট</a>'+'</div>';
  }).join("");
 }
 document.addEventListener("click",async function(e){
