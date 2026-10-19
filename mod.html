@@ -103,6 +103,20 @@ footer{border-top:1px solid var(--line);margin-top:36px;padding:20px 0;color:var
 .soc::after{content:"";position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent)}
 .soc:hover::after{transform:translateX(120%);transition:transform .6s}
 .facebook:hover{box-shadow:0 0 14px #1877f2}.youtube:hover{box-shadow:0 0 14px #e60000}.telegram:hover{box-shadow:0 0 14px #229ed9}
+.rate{display:flex;gap:14px;align-items:center}
+.avgn{font-size:42px;font-weight:700;line-height:1;background:linear-gradient(#ffb800,#ff6a00);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stars{color:#f59e0b;font-size:22px;letter-spacing:2px}
+.myr{display:flex;gap:2px;margin:4px 0 10px}
+.myr button{border:0;background:none;font-size:32px;line-height:1;cursor:pointer;color:#c9ced8;padding:0 2px;transition:transform .12s,color .12s}
+.myr button.on{color:#f59e0b;text-shadow:0 0 10px rgba(245,158,11,.6)}
+.myr button:hover{transform:scale(1.25)}
+.cform{display:grid;gap:8px;margin-top:6px}
+.cform textarea{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 10px;width:100%;font:inherit;color:inherit}
+.cform .btn{justify-self:start}
+.cm{display:flex;gap:10px;padding:12px 0;border-top:1px solid var(--line);animation:fi .35s both}
+.cm img,.ph2{width:36px;height:36px;border-radius:50%;object-fit:cover;flex:0 0 auto;background:var(--chip)}
+.cb{min-width:0;flex:1}
+.cdel{border:0;background:none;cursor:pointer;opacity:.6}.cdel:hover{opacity:1}
 </style>
 </head>
 <body>
@@ -130,7 +144,7 @@ var $=function(i){return document.getElementById(i)},
 esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
 safe=function(u){return /^https?:\/\//i.test(u||"")?u:""},
 BADGE={owner:"Owner",moderator:"Moderator",premium:"Premium",vip:"VIP"},
-FREE=["owner","moderator","premium","vip"],db,M,role="user",gal=[],CUR=0,FRESH=false,ROUNDS=2,SECS=15;
+FREE=["owner","moderator","premium","vip"],db,M,role="user",gal=[],CUR=0,UID=null,MYR=0,FRESH=false,ROUNDS=2,SECS=15;
 
 function note(t){var n=$("toast");n.textContent=t;n.hidden=false;clearTimeout(note.t);note.t=setTimeout(function(){n.hidden=true},3000)}
 function fmt(n){n=n||0;return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":String(n)}
@@ -174,9 +188,10 @@ function render(){
  '<div class="box"><h2>বিবরণ</h2><div class="desc">'+(m.description?nl(m.description):'<span class="muted">কোনো বিবরণ দেওয়া হয়নি।</span>')+'</div></div>'+
  (m.install_steps?'<div class="box"><h2>ডাউনলোড গাইড</h2><div class="desc">'+nl(m.install_steps)+'</div></div>':"")+
  (m.credit_name?'<div class="box"><h2>ক্রেডিট</h2><div class="desc">মূল নির্মাতা: <b>'+esc(m.credit_name)+'</b></div></div>':"")+
+ '<div class="box" id="rc"><h2>রেটিং ও কমেন্ট</h2><div class="rate"><div class="avgn" id="avg">—</div><div><div class="stars" id="stars"></div><div class="muted" id="rcnt"></div></div></div><div id="myr"></div><div id="cform" class="cform"></div><div id="clist"></div></div>'+
  '<div class="adslot" data-ad="rel"></div><div id="rel"></div></div></div>';
  document.title=m.title+" – Bus Skin Store BD";
- dlBox();related();ADS.fill(document);
+ dlBox();related();ADS.fill(document);initRC();
 }
 
 /* ডাউনলোড বক্স: ব্যাজ নেই হলে ২ বার ১৫ সেকেন্ড, আসল তালা সার্ভারে */
@@ -239,6 +254,69 @@ async function related(){
  $("rel").innerHTML='<h2>আরও মড</h2><div class="grid">'+r.data.map(function(m){return '<a class="rc" href="mod.html?id='+m.id+'"><div class="rt">'+(safe(m.cover_url)?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="">':'<svg style="width:60%;--b:var(--g);--s:var(--y)"><use href="#bus"/></svg>')+'</div><div class="rb">'+esc(m.title)+'<small>⬇ '+fmt(m.downloads)+'</small></div></a>'}).join("")+'</div>';
 }
 
+/* রেটিং ও কমেন্ট */
+function starsStr(a){var n=Math.round(a);return "★★★★★".slice(0,n)+"☆☆☆☆☆".slice(0,5-n)}
+function drawRate(){
+ var c=M.rating_count||0,a=c?M.rating_sum/c:0;
+ $("avg").textContent=c?a.toFixed(1):"—";$("stars").textContent=starsStr(a);
+ $("rcnt").textContent=c?c+" জন রেটিং দিয়েছেন":"এখনো কেউ রেটিং দেননি";
+}
+function paintStars(n){document.querySelectorAll("#mys button").forEach(function(b){b.classList.toggle("on",+b.dataset.star<=n)})}
+async function initRC(){
+ drawRate();
+ var b=$("myr");
+ if(!UID){
+  b.innerHTML='<div class="muted" style="margin-top:10px">রেটিং ও কমেন্ট করতে <a href="#" id="rl">গুগল দিয়ে লগইন</a> করুন।</div>';
+  $("rl").onclick=function(e){e.preventDefault();db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname}})};
+ }else{
+  if(M.uploader&&M.uploader.id==UID){b.innerHTML='<div class="muted" style="margin-top:10px">নিজের মডে রেটিং দেওয়া যায় না।</div>'}
+  else{
+   var r=await db.from("mod_ratings").select("stars").eq("mod_id",M.id).eq("user_id",UID).maybeSingle();
+   MYR=r.data?r.data.stars:0;
+   b.innerHTML='<div class="muted" style="margin-top:10px">আপনার রেটিং:</div><div class="myr" id="mys">'+[1,2,3,4,5].map(function(i){return '<button data-star="'+i+'" aria-label="'+i+' তারা">★</button>'}).join("")+'</div>';
+   paintStars(MYR);
+  }
+  $("cform").innerHTML='<textarea id="ct2" rows="3" maxlength="500" placeholder="আপনার মতামত লিখুন..."></textarea><button class="btn p" id="csend">কমেন্ট করুন</button>';
+  $("csend").onclick=sendComment;
+ }
+ loadComments();
+}
+async function rate(n){
+ var r=await db.from("mod_ratings").upsert({mod_id:M.id,user_id:UID,stars:n});
+ if(r.error){note(/own mod/i.test(r.error.message)?"নিজের মডে রেটিং দেওয়া যায় না":"সমস্যা: "+r.error.message);return}
+ MYR=n;paintStars(n);
+ var m=await db.from("mods").select("rating_sum,rating_count").eq("id",M.id).single();
+ if(m.data){M.rating_sum=m.data.rating_sum;M.rating_count=m.data.rating_count;drawRate()}
+ note("ধন্যবাদ! রেটিং সেভ হয়েছে ⭐");
+}
+async function loadComments(){
+ var r=await db.from("comments").select("id,body,created_at,user_id,author:profiles!user_id(id,display_name,avatar_url,role)").eq("mod_id",M.id).order("created_at",{ascending:false}).limit(100),l=$("clist");
+ if(!l)return;
+ if(r.error){l.innerHTML="";return}
+ var staff=role=="owner"||role=="moderator";
+ l.innerHTML=r.data.length?r.data.map(function(c){
+  var a=c.author||{};
+  return '<div class="cm">'+(safe(a.avatar_url)?'<img src="'+esc(a.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'<div class="ph2"></div>')+'<div class="cb"><div><b><a href="profile.html?u='+esc(a.id||"")+'" style="color:inherit">'+esc(a.display_name||"অজানা")+'</a></b> '+badge(a.role)+' <span class="muted">'+esc(dt(c.created_at))+'</span>'+((UID==c.user_id||staff)?' <button class="cdel" data-cdel="'+c.id+'" aria-label="মুছুন">🗑</button>':"")+'</div><div class="desc">'+nl(c.body)+'</div></div></div>';
+ }).join(""):'<div class="muted" style="margin-top:12px">এখনো কোনো কমেন্ট নেই। প্রথম কমেন্ট আপনি করুন!</div>';
+}
+async function sendComment(){
+ var t=$("ct2").value.trim();if(!t){note("কমেন্ট লিখুন");return}
+ var b=$("csend");b.disabled=true;
+ var r=await db.from("comments").insert({mod_id:M.id,user_id:UID,body:t});
+ b.disabled=false;
+ if(r.error){note(/too_fast/i.test(r.error.message)?"একটু ধীরে, কিছুক্ষণ পরে আবার কমেন্ট করুন":"সমস্যা: "+r.error.message);return}
+ $("ct2").value="";note("কমেন্ট যোগ হয়েছে");loadComments();
+}
+document.addEventListener("click",async function(e){
+ var st=e.target.closest("[data-star]");if(st){rate(+st.dataset.star);return}
+ var d=e.target.closest("[data-cdel]");
+ if(d&&confirm("এই কমেন্ট মুছে ফেলবেন?")){var r=await db.from("comments").delete().eq("id",d.dataset.cdel);if(r.error)note("মোছা যায়নি");else loadComments()}
+});
+document.addEventListener("mouseover",function(e){
+ if(!$("mys"))return;
+ var st=e.target.closest("[data-star]");
+ if(st)paintStars(+st.dataset.star);else paintStars(MYR);
+});
 function openLB(i){
  if(!gal.length)return;CUR=i;
  var o=document.createElement("div");o.className="lb";o.id="lb";
@@ -266,6 +344,7 @@ async function init(){
  $("login").onclick=function(){db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname}})};
  var s=(await db.auth.getSession()).data.session;
  if(s){
+  UID=s.user.id;
   var p=await db.from("profiles").select("display_name,avatar_url,role").eq("id",s.user.id).single();
   if(p.data){role=p.data.role;$("login").hidden=true;
    $("me").innerHTML=(p.data.avatar_url?'<img src="'+esc(p.data.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+badge(role)+'<a class="btn" href="profile.html">প্রোফাইল</a><button class="btn" id="lo">লগআউট</button>';$("me").hidden=false;

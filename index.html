@@ -147,6 +147,10 @@ h1.fire::after{left:68%;width:5px;height:5px;background:#ff6a00;animation-delay:
 .sm.y{background:#e60000}.sm.y:hover{box-shadow:0 0 10px #e60000}
 .sm.t{background:#229ed9}.sm.t:hover{box-shadow:0 0 10px #229ed9}
 @media (prefers-reduced-motion:reduce){.sm::after{animation:none}}
+.dl{display:flex;gap:10px;flex-wrap:wrap}.dl .rt{color:#f59e0b;font-weight:700}
+.fbar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:12px 0 4px}
+.fbar label{display:flex;gap:6px;align-items:center;font-size:14px;font-weight:600}
+.fbar select{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:5px 8px}
 </style>
 </head>
 <body>
@@ -176,6 +180,11 @@ h1.fire::after{left:68%;width:5px;height:5px;background:#ff6a00;animation-delay:
   </div>
   <div class="games" id="games" role="group" aria-label="গেম বাছাই"></div>
   <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="fbar" id="fbar" hidden>
+    <label>সাজান <select id="fs"><option value="dl">বেশি ডাউনলোড</option><option value="new">নতুন</option><option value="rate">সর্বোচ্চ রেটিং</option><option value="comm">বেশি কমেন্ট</option><option value="view">বেশি ভিউ</option></select></label>
+    <label>রেটিং <select id="fr"><option value="0">সব</option><option value="3">৩★ বা বেশি</option><option value="4">৪★ বা বেশি</option></select></label>
+    <label class="ck"><input type="checkbox" id="fv"> ভিডিও সহ</label>
+  </div>
   <div id="o1"></div>
   <div class="adslot" data-ad="mid"></div>
   <div id="o2"></div>
@@ -190,7 +199,7 @@ h1.fire::after{left:68%;width:5px;height:5px;background:#ff6a00;animation-delay:
 <script>
 var $=function(i){return document.getElementById(i)},
 esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
-S={games:[],cats:[],mods:[],g:null,t:"all",q:"",sort:"pop"},
+S={games:[],cats:[],mods:[],g:null,t:"all",q:"",sort:"dl",minr:0,vid:false},
 BADGE={owner:"Owner",moderator:"Moderator",premium:"Premium",vip:"VIP"},db;
 
 function skel(){
@@ -207,26 +216,44 @@ function card(m){
  var u=m.uploader||{},b=BADGE[u.role]?'<span class="badge '+esc(u.role)+'">'+BADGE[u.role]+'</span>':'',
  c=S.cats.find(function(x){return x.id==m.category_id}),
  th=m.cover_url?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="'+esc(m.title)+'">':'<svg><use href="#bus"/></svg>';
- return '<article class="card"><a class="th" href="mod.html?id='+m.id+'">'+(isNew(m)?'<span class="tag">নতুন</span>':'')+th+'</a><div class="body"><div class="cat">'+esc(c?c.name:"")+'</div><a class="t" href="mod.html?id='+m.id+'">'+esc(m.title)+'</a><div class="meta"><a class="un" href="profile.html?u='+esc(u.id||"")+'">'+(/^https?:\/\//i.test(u.avatar_url||"")?'<img class="av" src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+esc(u.display_name||"অজানা")+'</a> '+b+minisoc(u)+'</div><div class="dl">⬇ '+fmt(m.downloads)+' ডাউনলোড</div><div class="acts"><a class="btn p" href="mod.html?id='+m.id+'">ডাউনলোড</a></div></div></article>';
+ return '<article class="card"><a class="th" href="mod.html?id='+m.id+'">'+(isNew(m)?'<span class="tag">নতুন</span>':'')+th+'</a><div class="body"><div class="cat">'+esc(c?c.name:"")+'</div><a class="t" href="mod.html?id='+m.id+'">'+esc(m.title)+'</a><div class="meta"><a class="un" href="profile.html?u='+esc(u.id||"")+'">'+(/^https?:\/\//i.test(u.avatar_url||"")?'<img class="av" src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+esc(u.display_name||"অজানা")+'</a> '+b+minisoc(u)+'</div><div class="dl"><span class="rt">★ '+(m.rating_count?avg(m).toFixed(1):"—")+'</span><span>⬇ '+fmt(m.downloads)+'</span><span>💬 '+fmt(m.comment_count)+'</span><span>👁 '+fmt(m.views)+'</span></div><div class="acts"><a class="btn p" href="mod.html?id='+m.id+'">ডাউনলোড</a></div></div></article>';
 }
 function row(title,L){return '<section><h2>'+title+'</h2><div class="grid">'+L.map(card).join("")+'</div></section>'}
+function avg(m){return m.rating_count?m.rating_sum/m.rating_count:0}
+function srt(a,b){
+ var k=S.sort;
+ if(k=="new")return byNew(a,b);
+ if(k=="rate")return (avg(b)-avg(a))||((b.rating_count||0)-(a.rating_count||0));
+ if(k=="comm")return (b.comment_count||0)-(a.comment_count||0);
+ if(k=="view")return (b.views||0)-(a.views||0);
+ return (b.downloads||0)-(a.downloads||0);
+}
+function flt(m){return m.title.toLowerCase().indexOf(S.q.toLowerCase())>-1&&avg(m)>=S.minr&&(!S.vid||!!m.video_url)}
+function topRows(){
+ var A=S.mods.filter(function(m){return m.title.toLowerCase().indexOf(S.q.toLowerCase())>-1});
+ var r=A.filter(function(m){return m.rating_count>0}).sort(function(a,b){return (avg(b)-avg(a))||(b.rating_count-a.rating_count)}).slice(0,6),
+ c=A.filter(function(m){return m.comment_count>0}).sort(function(a,b){return b.comment_count-a.comment_count}).slice(0,6),
+ v=A.slice().sort(function(a,b){return (b.views||0)-(a.views||0)}).slice(0,6);
+ return (r.length?row("⭐ সর্বোচ্চ রেটিং",r):"")+(c.length?row("💬 সবচেয়ে বেশি কমেন্ট",c):"")+(v.length?row("👁 সবচেয়ে বেশি ভিউ",v):"");
+}
 function sec(c){
- var q=S.q.toLowerCase(),L=S.mods.filter(function(m){return m.category_id==c.id&&m.title.toLowerCase().indexOf(q)>-1});
+ var L=S.mods.filter(function(m){return m.category_id==c.id&&flt(m)}).sort(srt);
  if(!L.length)return"";
- if(S.t=="all")L=L.slice(0,6);else if(S.sort=="new")L=L.slice().sort(byNew);
+ if(S.t=="all")L=L.slice(0,6);
  return row((S.t=="all"?"জনপ্রিয় ":"")+esc(c.name),L);
 }
 function draw(){
  $("games").innerHTML=S.games.map(function(g){return '<button class="chip" aria-pressed="'+(g.id==S.g)+'" data-g="'+g.id+'">'+img(g.image_url,g.name)+esc(g.name)+'</button>'}).join("");
- $("tabs").innerHTML='<button class="tab" role="tab" aria-selected="'+(S.t=="all")+'" data-t="all">সব</button>'+S.cats.map(function(c){return '<button class="tab" role="tab" aria-selected="'+(S.t==c.id)+'" data-t="'+c.id+'">'+img(c.image_url,c.name)+esc(c.name)+'</button>'}).join("");
+ $("tabs").innerHTML='<button class="tab" role="tab" aria-selected="'+(S.t=="all")+'" data-t="all">সব</button><button class="tab" role="tab" aria-selected="'+(S.t=="top")+'" data-t="top">🔥 টপ</button>'+S.cats.map(function(c){return '<button class="tab" role="tab" aria-selected="'+(S.t==c.id)+'" data-t="'+c.id+'">'+img(c.image_url,c.name)+esc(c.name)+'</button>'}).join("");
  drawStrip();
- var h="";
- if(S.t=="all"&&!S.q){var nw=S.mods.slice().sort(byNew).slice(0,6);if(nw.length)h+=row("নতুন যোগ হয়েছে",nw)}
- else if(S.t!="all"&&S.mods.length)h+='<div class="sort"><button class="chip" aria-pressed="'+(S.sort=="pop")+'" data-s="pop">জনপ্রিয়</button><button class="chip" aria-pressed="'+(S.sort=="new")+'" data-s="new">নতুন</button></div>';
+ var fb=$("fbar");if(fb)fb.hidden=!S.mods.length||S.t=="top";
  var ms=document.querySelector('.adslot[data-ad="mid"]');if(ms)ms.hidden=!S.mods.length;
+ var h="";
+ if(S.t=="top")h=topRows();
+ else if(S.t=="all"&&!S.q&&!S.minr&&!S.vid&&S.sort=="dl"){var nw=S.mods.slice().sort(byNew).slice(0,6);if(nw.length)h+=row("নতুন যোগ হয়েছে",nw)}
  $("o1").innerHTML=h;h="";
- S.cats.forEach(function(c){if(S.t=="all"||S.t==c.id)h+=sec(c)});
- $("o2").innerHTML=h||'<div class="empty">'+(S.q?"কিছু পাওয়া যায়নি। অন্য শব্দে খুঁজুন।":"এখনো কোনো মড যোগ হয়নি, শীঘ্রই আসছে।")+'</div>';
+ if(S.t!="top")S.cats.forEach(function(c){if(S.t=="all"||S.t==c.id)h+=sec(c)});
+ $("o2").innerHTML=h||((S.t=="top"&&$("o1").innerHTML)?"":'<div class="empty">'+((S.q||S.minr||S.vid)?"কিছু পাওয়া যায়নি। অন্য শব্দে খুঁজুন।":"এখনো কোনো মড যোগ হয়নি, শীঘ্রই আসছে।")+'</div>');
 }
 async function showMe(sess){
  var l=$("login"),m=$("me");
@@ -273,7 +300,7 @@ async function loadGame(){
  skel();
  var r=await Promise.all([
   db.from("categories").select("id,name,image_url").eq("game_id",S.g).order("sort_order"),
-  db.from("mods").select("id,title,cover_url,downloads,created_at,category_id,uploader:profiles!uploader_id(id,display_name,avatar_url,role,social_facebook,social_youtube,social_telegram)").eq("game_id",S.g).eq("status","approved").order("downloads",{ascending:false}).limit(200)
+  db.from("mods").select("id,title,cover_url,downloads,created_at,views,rating_sum,rating_count,comment_count,video_url,category_id,uploader:profiles!uploader_id(id,display_name,avatar_url,role,social_facebook,social_youtube,social_telegram)").eq("game_id",S.g).eq("status","approved").order("downloads",{ascending:false}).limit(200)
  ]);
  if(r[0].error||r[1].error){fail("ডেটা লোড করা যায়নি। config.js-এ Supabase URL ও কী ঠিক আছে কিনা দেখুন।");return}
  S.cats=r[0].data;S.mods=r[1].data;S.t="all";draw();
@@ -292,10 +319,13 @@ async function boot(){
 document.addEventListener("click",function(e){
  var a=e.target.closest("[data-g]"),b=e.target.closest("[data-t]");
  if(a&&a.dataset.g!=S.g){S.g=+a.dataset.g;S.q="";$("q").value="";loadGame()}
- if(b){S.t=b.dataset.t=="all"?"all":+b.dataset.t;draw()}
+ if(b){S.t=(b.dataset.t=="all"||b.dataset.t=="top")?b.dataset.t:+b.dataset.t;draw()}
  var so=e.target.closest("[data-s]");if(so){S.sort=so.dataset.s;draw()}
 });
 $("q").addEventListener("input",function(e){S.q=e.target.value;if(S.cats.length)draw()});
+$("fs").onchange=function(){S.sort=this.value;draw()};
+$("fr").onchange=function(){S.minr=+this.value;draw()};
+$("fv").onchange=function(){S.vid=this.checked;draw()};
 var R=document.documentElement;
 try{var s=localStorage.getItem("t");if(s)R.dataset.theme=s}catch(e){}
 $("theme").addEventListener("click",function(){

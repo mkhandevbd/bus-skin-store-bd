@@ -6,7 +6,7 @@
     "ডাউনলোড": "Download", "ডাউনলোড করুন": "Download", "জনপ্রিয়": "Popular",
     "বাস স্কিন": "Bus Skin", "বাস মড": "Bus Mod", "ম্যাপ মড": "Map Mod",
     "ভিউ": "Views", "সাইজ": "Size", "তারিখ": "Date", "বিবরণ": "Description", "ক্রেডিট": "Credit",
-    "আপলোডার": "Uploader", "প্রোফাইল": "Profile", "যোগ দিয়েছেন": "Joined", "হোম": "Home", "অজানা": "Unknown", "অন্য লিংক": "Other link",
+    "আপলোডার": "Uploader", "করুন।": ".", "সাজান": "Sort", "রেটিং": "Rating", "ভিডিও সহ": "With video", "বেশি ডাউনলোড": "Most downloads", "বেশি কমেন্ট": "Most comments", "বেশি ভিউ": "Most views", "সর্বোচ্চ রেটিং": "Top rated", "৩★ বা বেশি": "3★ or more", "৪★ বা বেশি": "4★ or more", "🔥 টপ": "🔥 Top", "রেটিং ও কমেন্ট": "Ratings & Comments", "কমেন্ট করুন": "Post comment", "প্রোফাইল": "Profile", "যোগ দিয়েছেন": "Joined", "হোম": "Home", "অজানা": "Unknown", "অন্য লিংক": "Other link",
     "নতুন যোগ হয়েছে": "Newly added", "ঠিক আছে": "OK", "বন্ধ করুন": "Close", "মুছুন": "Delete"
   };
   var S = [
@@ -25,6 +25,16 @@
     ["মড পাওয়া যায়নি।", "Mod not found."],
     ["হোমে ফিরুন", "Back to home"],
     ["ডাউনলোড গাইড", "Download Guide"],
+    ["⭐ সর্বোচ্চ রেটিং", "⭐ Top rated"],
+    ["💬 সবচেয়ে বেশি কমেন্ট", "💬 Most commented"],
+    ["👁 সবচেয়ে বেশি ভিউ", "👁 Most viewed"],
+    ["রেটিং ও কমেন্ট করতে", "To rate and comment,"],
+    ["আপনার রেটিং:", "Your rating:"],
+    ["আপনার মতামত লিখুন...", "Write your comment..."],
+    ["জন রেটিং দিয়েছেন", "people rated"],
+    ["এখনো কেউ রেটিং দেননি", "No ratings yet"],
+    ["এখনো কোনো কমেন্ট নেই। প্রথম কমেন্ট আপনি করুন!", "No comments yet. Be the first!"],
+    ["নিজের মডে রেটিং দেওয়া যায় না।", "You can't rate your own mod."],
     ["মূল নির্মাতা:", "Original creator:"],
     ["শেয়ার করুন", "Share"],
     ["লিংক কপি হয়েছে", "Link copied"],
