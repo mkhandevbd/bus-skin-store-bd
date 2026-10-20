@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>মড – Bus Skin Store BD</title>
+<meta name="description" content="বাস সিমুলেটর মড ডাউনলোড – Bus Skin Store BD">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -145,7 +146,7 @@ var $=function(i){return document.getElementById(i)},
 esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
 safe=function(u){return /^https?:\/\//i.test(u||"")?u:""},
 BADGE={owner:"Owner",moderator:"Moderator",premium:"Premium",vip:"VIP"},
-FREE=["owner","moderator","premium","vip"],db,M,role="user",gal=[],CUR=0,UID=null,MYR=0,FRESH=false,ROUNDS=2,SECS=15;
+FREE=["owner","moderator","premium","vip"],db,M,role="user",gal=[],CUR=0,UID=null,MYR=0,SHARE="",FRESH=false,ROUNDS=2,SECS=15;
 
 function note(t){var n=$("toast");n.textContent=t;n.hidden=false;clearTimeout(note.t);note.t=setTimeout(function(){n.hidden=true},3000)}
 function fmt(n){n=n||0;return n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":String(n)}
@@ -156,6 +157,29 @@ function badge(r){return BADGE[r]?'<span class="badge '+esc(r)+'">'+BADGE[r]+'</
 function soc(m){return [["facebook","Facebook"],["youtube","YouTube"],["telegram","Telegram"]].map(function(x){var u=safe(m["social_"+x[0]])||safe((m.uploader||{})["social_"+x[0]]);return u?'<a class="soc '+x[0]+'" href="'+esc(u)+'" target="_blank" rel="noopener noreferrer">'+x[1]+'</a>':""}).join("")}
 function fail(t){$("page").innerHTML='<div class="empty">'+esc(t)+' <a href="index.html">হোমে ফিরুন</a></div>'}
 
+function setMeta(n,c,prop){
+ var q=prop?'meta[property="'+n+'"]':'meta[name="'+n+'"]',e=document.querySelector(q);
+ if(!e){e=document.createElement("meta");e.setAttribute(prop?"property":"name",n);document.head.appendChild(e)}
+ e.setAttribute("content",c);
+}
+function seo(){
+ var m=M,url=location.origin+location.pathname+"?id="+m.id,desc=((m.description||"").replace(/\s+/g," ").trim().slice(0,160))||("ডাউনলোড করুন: "+m.title+" (বাস সিমুলেটর মড)"),img=safe(m.cover_url)||(location.origin+"/og.png");
+ document.title=m.title+" – Bus Skin Store BD";
+ setMeta("description",desc);setMeta("og:title",document.title,1);setMeta("og:description",desc,1);setMeta("og:image",img,1);setMeta("og:url",url,1);setMeta("og:type","website",1);setMeta("twitter:card","summary_large_image");
+ var l=document.querySelector("link[rel=canonical]");if(!l){l=document.createElement("link");l.rel="canonical";document.head.appendChild(l)}l.href=url;
+ var ld={"@context":"https://schema.org","@type":"SoftwareApplication","name":m.title,"description":desc,"image":img,"url":url,"applicationCategory":"GameApplication","operatingSystem":"Android","datePublished":m.created_at,"inLanguage":"bn","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}};
+ if(m.uploader&&m.uploader.display_name)ld.author={"@type":"Person","name":m.uploader.display_name};
+ if(m.rating_count>0)ld.aggregateRating={"@type":"AggregateRating","ratingValue":(m.rating_sum/m.rating_count).toFixed(1),"ratingCount":m.rating_count,"bestRating":5,"worstRating":1};
+ var s=document.getElementById("ld");if(!s){s=document.createElement("script");s.type="application/ld+json";s.id="ld";document.head.appendChild(s)}
+ s.textContent=JSON.stringify(ld);
+}
+async function fixShare(){
+ var w=await wurl();if(!w)return;
+ SHARE=w+"/s/"+M.id;
+ var fb=$("shfb"),tg=$("shtg");
+ if(fb)fb.href="https://www.facebook.com/sharer/sharer.php?u="+encodeURIComponent(SHARE);
+ if(tg)tg.href="https://t.me/share/url?url="+encodeURIComponent(SHARE)+"&text="+encodeURIComponent(M.title);
+}
 function ytId(u){var m=/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/))([\w-]{11})/.exec(u||"");return m?m[1]:""}
 function itemHTML(i,auto){
  var g=gal[i];if(!g)return '<svg><use href="#bus"/></svg>';
@@ -184,15 +208,15 @@ function render(){
  '<aside class="side"><div class="box" id="dl"></div>'+
  '<div class="box"><div class="au">'+(u.avatar_url?'<img src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'<img alt="">')+'<div><b><a href="profile.html?u='+esc(u.id||"")+'" style="color:inherit">'+esc(u.display_name||"অজানা")+'</a></b> '+badge(u.role)+'<div class="muted">আপলোডার</div></div></div>'+(soc(m)?'<div class="socs">'+soc(m)+'</div>':'<div class="muted">কোনো সোশ্যাল লিংক নেই</div>')+'</div>'+
  '<div class="box stats"><div><b id="sd">'+fmt(m.downloads)+'</b><span>ডাউনলোড</span></div><div><b>'+fmt(m.views)+'</b><span>ভিউ</span></div><div><b>'+sz(m.file_size)+'</b><span>সাইজ</span></div><div><b style="font-size:15px">'+esc(dt(m.created_at))+'</b><span>তারিখ</span></div></div>'+
- '<div class="adslot" data-ad="side"></div><div class="box"><h3>শেয়ার করুন</h3><div class="share"><a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href)+'">Facebook</a><a class="btn" target="_blank" rel="noopener noreferrer" href="https://t.me/share/url?url='+encodeURIComponent(location.href)+'&text='+encodeURIComponent(m.title)+'">Telegram</a><button class="btn" id="cp">লিংক কপি</button></div></div></aside>'+
+ '<div class="adslot" data-ad="side"></div><div class="box"><h3>শেয়ার করুন</h3><div class="share"><a class="btn" id="shfb" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href)+'">Facebook</a><a class="btn" id="shtg" target="_blank" rel="noopener noreferrer" href="https://t.me/share/url?url='+encodeURIComponent(location.href)+'&text='+encodeURIComponent(m.title)+'">Telegram</a><button class="btn" id="cp">লিংক কপি</button></div></div></aside>'+
  '<div class="rest">'+
  '<div class="box"><h2>বিবরণ</h2><div class="desc">'+(m.description?nl(m.description):'<span class="muted">কোনো বিবরণ দেওয়া হয়নি।</span>')+'</div></div>'+
  (m.install_steps?'<div class="box"><h2>ডাউনলোড গাইড</h2><div class="desc">'+nl(m.install_steps)+'</div></div>':"")+
  (m.credit_name?'<div class="box"><h2>ক্রেডিট</h2><div class="desc">মূল নির্মাতা: <b>'+esc(m.credit_name)+'</b></div></div>':"")+
  '<div class="box" id="rc"><h2>রেটিং ও কমেন্ট</h2><div class="rate"><div class="avgn" id="avg">—</div><div><div class="stars" id="stars"></div><div class="muted" id="rcnt"></div></div></div><div id="myr"></div><div id="cform" class="cform"></div><div id="clist"></div></div>'+
  '<div class="adslot" data-ad="rel"></div><div id="rel"></div></div></div>';
- document.title=m.title+" – Bus Skin Store BD";
- dlBox();related();ADS.fill(document);initRC();
+ seo();
+ dlBox();related();ADS.fill(document);initRC();fixShare();
 }
 
 /* ডাউনলোড বক্স: ব্যাজ নেই হলে ২ বার ১৫ সেকেন্ড, আসল তালা সার্ভারে */
@@ -360,13 +384,14 @@ async function init(){
 document.addEventListener("click",function(e){
  var t=e.target.closest(".thumbs button");if(t){show(+t.dataset.i);return}
  var a=e.target.closest(".arr");if(a){$("th").scrollBy({left:a.dataset.d*240,behavior:"smooth"});return}
- if(e.target.id=="cp"){navigator.clipboard&&navigator.clipboard.writeText(location.href).then(function(){note("লিংক কপি হয়েছে")},function(){prompt("লিংক কপি করুন:",location.href)})}
+ if(e.target.id=="cp"){navigator.clipboard&&navigator.clipboard.writeText(SHARE||location.href).then(function(){note("লিংক কপি হয়েছে")},function(){prompt("লিংক কপি করুন:",SHARE||location.href)})}
 });
 var R=document.documentElement;
 try{var s0=localStorage.getItem("t");if(s0)R.dataset.theme=s0}catch(e){}
 $("theme").onclick=function(){var cur=R.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),n=cur=="dark"?"light":"dark";R.dataset.theme=n;try{localStorage.setItem("t",n)}catch(e){}};
 init();
 </script>
+<script src="track.js"></script>
 <script src="nav.js"></script>
 <script src="i18n.js"></script>
 </body>

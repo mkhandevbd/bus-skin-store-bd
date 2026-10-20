@@ -113,6 +113,7 @@ async function wurl(){
  return WURL;
 }
 async function wpost(path,file,onp,onsent){
+ if(path=="/img"&&window.FP&&FP.squeeze)file=await FP.squeeze(file);
  var w=await wurl();if(!w)throw new Error("সার্ভারের লিংক সেট করা হয়নি");
  var s=(await db.auth.getSession()).data.session;if(!s)throw new Error("আবার লগইন করুন");
  return new Promise(function(res,rej){

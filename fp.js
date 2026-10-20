@@ -72,5 +72,25 @@ var FP = (function () {
     }).observe(document.body, { childList: true, subtree: true });
   }
   if (document.readyState == "loading") document.addEventListener("DOMContentLoaded", init); else init();
-  return { make: make, scan: scan };
+  /* ছবি ছোট করে আপলোড (সাইট দ্রুত খুলবে, জায়গাও কম লাগবে) */
+  function squeeze(file, maxW) {
+    return new Promise(function (res) {
+      if (!file || !/^image\/(png|jpeg|webp)$/.test(file.type) || file.size < 250 * 1024) return res(file);
+      var img = new Image(), u = URL.createObjectURL(file);
+      img.onload = function () {
+        var w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, (maxW || 1400) / w);
+        var c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(u);
+        c.toBlob(function (b) {
+          if (!b || b.size >= file.size) return res(file);
+          res(new File([b], file.name.replace(/\.\w+$/, "") + ".webp", { type: b.type }));
+        }, "image/webp", 0.84);
+      };
+      img.onerror = function () { URL.revokeObjectURL(u); res(file); };
+      img.src = u;
+    });
+  }
+  return { make: make, scan: scan, squeeze: squeeze };
 })();

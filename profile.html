@@ -120,6 +120,7 @@ async function wurl(){
  WURL=((r.data&&r.data.worker_url)||"").replace(/\/+$/,"");return WURL;
 }
 async function upAvatar(file){
+ if(window.FP&&FP.squeeze)file=await FP.squeeze(file,600);
  var w=await wurl();if(!w)throw new Error("আপলোড সার্ভার এখনো চালু হয়নি");
  var s=(await db.auth.getSession()).data.session;if(!s)throw new Error("আবার লগইন করুন");
  var r=await fetch(w+"/img",{method:"POST",headers:{Authorization:"Bearer "+s.access_token,"Content-Type":file.type||"application/octet-stream","X-File-Name":encodeURIComponent(file.name)},body:file});
@@ -198,6 +199,7 @@ try{var s0=localStorage.getItem("t");if(s0)R.dataset.theme=s0}catch(e){}
 $("theme").onclick=function(){var cur=R.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),n=cur=="dark"?"light":"dark";R.dataset.theme=n;try{localStorage.setItem("t",n)}catch(e){}};
 init();
 </script>
+<script src="track.js"></script>
 <script src="nav.js"></script>
 <script src="i18n.js"></script>
 </body>

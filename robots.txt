@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /edit.html
+Disallow: /upload.html
+
+Sitemap: https://bsstore-api.devmkhan2005.workers.dev/sitemap.xml

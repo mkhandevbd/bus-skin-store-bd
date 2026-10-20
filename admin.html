@@ -75,6 +75,13 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 .upbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g),var(--y));transition:width .25s}
 @media (prefers-reduced-motion:reduce){.ring.spin svg{animation:none}.upcard{animation:none}}
 .stp{max-height:90px;max-width:100%;border-radius:8px;border:1px solid var(--line)}
+.chart{display:flex;align-items:flex-end;gap:4px;height:150px;padding-top:18px}
+.bar{position:relative;flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.bar i{display:block;width:100%;background:linear-gradient(var(--y),var(--g));border-radius:5px 5px 0 0;min-height:2px;transition:filter .15s}
+.bar:hover i{filter:brightness(1.2)}
+.bar em{font-style:normal;font-size:10px;color:var(--muted);margin-bottom:2px}
+.bar span{font-size:10px;color:var(--muted);margin-top:3px}
+.two2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
 </style>
 <link rel="stylesheet" href="m.css">
 </head>
@@ -112,6 +119,7 @@ async function wurl(){
  return WURL;
 }
 async function wpost(path,file,onp,onsent){
+ if(path=="/img"&&window.FP&&FP.squeeze)file=await FP.squeeze(file);
  var w=await wurl();if(!w)throw new Error("সার্ভারের লিংক সেট করা হয়নি");
  var s=(await db.auth.getSession()).data.session;if(!s)throw new Error("আবার লগইন করুন");
  return new Promise(function(res,rej){
@@ -191,12 +199,29 @@ function show(p){
  ({ov:pOv,ap:pAp,add:pAdd,gm:pGm,us:pUs,ad:pAd,sv:pSv,st:pSt})[p]();
 }
 
-/* ওভারভিউ */
+/* ওভারভিউ: দৈনিক ভিজিটর ও অ্যাক্টিভিটি */
+function agg(rows,key){var o={};(rows||[]).forEach(function(r){o[r[key]]=(o[r[key]]||0)+r.n});return Object.keys(o).map(function(k){return [k,o[k]]}).sort(function(a,b){return b[1]-a[1]}).slice(0,8)}
+function flag(cc){return /^[A-Za-z]{2}$/.test(cc)&&cc!="XX"?String.fromCodePoint.apply(null,cc.toUpperCase().split("").map(function(c){return 127397+c.charCodeAt(0)})):"🌐"}
+var PN={"index.html":"হোমপেজ","mod.html":"মড পেজ","profile.html":"প্রোফাইল"};
+function lst(rows,fn){return rows.length?rows.map(function(x){return '<div class="row"><div class="grow">'+fn(x[0])+'</div><b>'+x[1]+'</b></div>'}).join(""):'<div class="muted">এখনো তথ্য নেই</div>'}
 async function pOv(){
+ var bd=function(n){return new Date(Date.now()+6*36e5-n*864e5).toISOString().slice(0,10)},today=bd(0);
  var q=function(s){return db.from("mods").select("id",{count:"exact",head:true}).eq("status",s)};
- var r=await Promise.all([q("approved"),q("pending"),db.from("profiles").select("id",{count:"exact",head:true}),db.from("daily_stats").select("*").order("day",{ascending:false}).limit(7)]);
- var rows=(r[3].data||[]).map(function(d){return '<div class="row"><div class="grow">'+esc(d.day)+'</div><div>ভিউ '+d.views+'</div><div>ডাউনলোড '+d.downloads+'</div><div>নতুন ইউজার '+d.new_users+'</div></div>'}).join("");
- $("panel").innerHTML='<div class="stats"><div class="stat"><b>'+(r[0].count||0)+'</b><span>অ্যাপ্রুভড মড</span></div><div class="stat"><b>'+(r[1].count||0)+'</b><span>অপেক্ষমাণ মড</span></div><div class="stat"><b>'+(r[2].count||0)+'</b><span>মোট ইউজার</span></div></div><div class="box"><h3>দৈনিক অ্যাক্টিভিটি (শেষ ৭ দিন)</h3>'+(rows||'<div class="muted">এখনো কোনো তথ্য নেই। ভিজিটর ও ডাউনলোড ট্র্যাকিং পরের ধাপে চালু হবে।</div>')+'</div>';
+ var r=await Promise.all([q("approved"),q("pending"),db.from("profiles").select("id",{count:"exact",head:true}),
+  db.from("daily_stats").select("*").gte("day",bd(13)).order("day",{ascending:true}),
+  db.from("page_stats").select("path,n").gte("day",bd(6)),db.from("ref_stats").select("src,n").gte("day",bd(6)),db.from("country_stats").select("cc,n").gte("day",bd(6))]);
+ var D=r[3].data||[],T=D.filter(function(d){return d.day==today})[0]||{},g=function(k){return T[k]||0};
+ var max=Math.max.apply(null,D.map(function(d){return d.visitors||0}).concat([1])),w7=D.filter(function(d){return d.day>=bd(6)});
+ var v7=w7.reduce(function(a,d){return a+(d.visitors||0)},0),mo=w7.reduce(function(a,d){return a+(d.mobile||0)},0),de=w7.reduce(function(a,d){return a+(d.desktop||0)},0),mp=(mo+de)?Math.round(mo/(mo+de)*100):0;
+ var st=function(n,l){return '<div class="stat"><b>'+n+'</b><span>'+l+'</span></div>'};
+ var chart=D.length?D.map(function(d){return '<div class="bar" title="'+esc(d.day)+': '+(d.visitors||0)+' ভিজিটর, '+(d.pageviews||0)+' পেজভিউ"><em>'+(d.visitors||0)+'</em><i style="height:'+Math.max(2,(d.visitors||0)/max*100)+'%"></i><span>'+esc(String(d.day).slice(8))+'</span></div>'}).join(""):"";
+ var rows=D.slice().reverse().map(function(d){return '<div class="row"><div class="grow">'+esc(d.day)+(d.day==today?" (আজ)":"")+'</div><div>👥 '+(d.visitors||0)+'</div><div>📄 '+(d.pageviews||0)+'</div><div>⬇ '+(d.downloads||0)+'</div><div>🆕 '+(d.new_users||0)+'</div><div>⬆ '+(d.uploads||0)+'</div></div>'}).join("");
+ $("panel").innerHTML=
+ '<div class="stats">'+st(g("visitors"),"আজ ভিজিটর")+st(g("pageviews"),"আজ পেজভিউ")+st(g("downloads"),"আজ ডাউনলোড")+st(g("new_users"),"আজ নতুন ইউজার")+st(g("uploads"),"আজ আপলোড")+'</div>'+
+ '<div class="stats">'+st(r[0].count||0,"অ্যাপ্রুভড মড")+st(r[1].count||0,"অপেক্ষমাণ মড")+st(r[2].count||0,"মোট ইউজার")+st(v7,"৭ দিনের ভিজিটর")+st(mp+"%","মোবাইল থেকে")+'</div>'+
+ '<div class="box"><h3>শেষ ১৪ দিনের ভিজিটর</h3>'+(chart?'<div class="chart">'+chart+'</div>':'<div class="muted">এখনো কোনো তথ্য নেই। সাইটে ভিজিটর এলে এখানে দেখা যাবে (আপনি Owner হিসেবে লগইন থাকলে আপনার নিজের ভিজিট গোনা হয় না)।</div>')+'</div>'+
+ '<div class="two2"><div class="box"><h3>জনপ্রিয় পেজ (৭ দিন)</h3>'+lst(agg(r[4].data,"path"),function(k){return esc(PN[k]||k)})+'</div><div class="box"><h3>ভিজিটর কোথা থেকে (৭ দিন)</h3>'+lst(agg(r[5].data,"src"),function(k){return k=="direct"?"সরাসরি":esc(k)})+'</div><div class="box"><h3>দেশ (৭ দিন)</h3>'+lst(agg(r[6].data,"cc"),function(k){return flag(k)+" "+esc(k)})+'</div></div>'+
+ '<div class="box"><h3>দিনের হিসাব</h3>'+(rows||'<div class="muted">এখনো তথ্য নেই</div>')+'<div class="muted" style="margin-top:8px">👥 ভিজিটর · 📄 পেজভিউ · ⬇ ডাউনলোড · 🆕 নতুন ইউজার · ⬆ আপলোড। দিন বদলায় বাংলাদেশের রাত ১২টায়।</div></div>';
 }
 
 /* মড তালিকা */

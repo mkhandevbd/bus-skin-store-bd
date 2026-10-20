@@ -4,7 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bus Skin Store BD – বাস স্কিন, মড ও ম্যাপ ডাউনলোড</title>
-<meta name="description" content="বাস সিমুলেটর ইন্দোনেশিয়া (BUSSID) সহ সিমুলেটর গেমের বাস স্কিন, মড ও ম্যাপ ফ্রি ডাউনলোড করুন।">
+<meta name="description" content="বাস সিমুলেটর ইন্দোনেশিয়া (BUSSID) ও বাস সিমুলেটর বাংলাদেশ (BSBD)-এর বাস স্কিন, বাস মড ও ম্যাপ মড ফ্রি ডাউনলোড করুন।">
+<link rel="canonical" href="https://bus-skin-store-bd.devmkhan2005.workers.dev/">
+<meta name="theme-color" content="#0a7d5a">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bus Skin Store BD">
+<meta property="og:title" content="Bus Skin Store BD – বাস স্কিন, বাস মড, ম্যাপ মড ডাউনলোড">
+<meta property="og:description" content="বাস সিমুলেটর ইন্দোনেশিয়া (BUSSID) ও বাস সিমুলেটর বাংলাদেশ (BSBD)-এর বাস স্কিন, বাস মড ও ম্যাপ মড ফ্রি ডাউনলোড করুন।">
+<meta property="og:url" content="https://bus-skin-store-bd.devmkhan2005.workers.dev/">
+<meta property="og:image" content="https://bus-skin-store-bd.devmkhan2005.workers.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Bus Skin Store BD – বাস স্কিন, বাস মড, ম্যাপ মড ডাউনলোড">
+<meta name="twitter:description" content="বাস সিমুলেটর ইন্দোনেশিয়া (BUSSID) ও বাস সিমুলেটর বাংলাদেশ (BSBD)-এর বাস স্কিন, বাস মড ও ম্যাপ মড ফ্রি ডাউনলোড করুন।">
+<meta name="twitter:image" content="https://bus-skin-store-bd.devmkhan2005.workers.dev/og.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Bus Skin Store BD","alternateName":"BUSSID X BSBD Store","url":"https://bus-skin-store-bd.devmkhan2005.workers.dev/","inLanguage":["bn","en"],"description":"বাস সিমুলেটর ইন্দোনেশিয়া (BUSSID) ও বাস সিমুলেটর বাংলাদেশ (BSBD)-এর বাস স্কিন, বাস মড ও ম্যাপ মড ফ্রি ডাউনলোড করুন।"}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -151,6 +167,8 @@ h1.fire::after{left:68%;width:5px;height:5px;background:#ff6a00;animation-delay:
 .fbar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:12px 0 4px}
 .fbar label{display:flex;gap:6px;align-items:center;font-size:14px;font-weight:600}
 .fbar select{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:5px 8px}
+.stage{width:100%;max-width:560px;justify-self:center}
+@media(max-width:640px){.stage{max-width:100%}.neon{font-size:12px;letter-spacing:.08em}}
 </style>
 <link rel="stylesheet" href="m.css">
 </head>
@@ -216,7 +234,7 @@ function byNew(a,b){return new Date(b.created_at)-new Date(a.created_at)}
 function card(m){
  var u=m.uploader||{},b=BADGE[u.role]?'<span class="badge '+esc(u.role)+'">'+BADGE[u.role]+'</span>':'',
  c=S.cats.find(function(x){return x.id==m.category_id}),
- th=m.cover_url?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="'+esc(m.title)+'">':'<svg><use href="#bus"/></svg>';
+ th=m.cover_url?'<img loading="lazy" decoding="async" src="'+esc(m.cover_url)+'" alt="'+esc(m.title)+'">':'<svg><use href="#bus"/></svg>';
  return '<article class="card"><a class="th" href="mod.html?id='+m.id+'">'+(isNew(m)?'<span class="tag">নতুন</span>':'')+th+'</a><div class="body"><div class="cat">'+esc(c?c.name:"")+'</div><a class="t" href="mod.html?id='+m.id+'">'+esc(m.title)+'</a><div class="meta"><a class="un" href="profile.html?u='+esc(u.id||"")+'">'+(/^https?:\/\//i.test(u.avatar_url||"")?'<img class="av" src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+esc(u.display_name||"অজানা")+'</a> '+b+minisoc(u)+'</div><div class="dl"><span class="rt">★ '+(m.rating_count?avg(m).toFixed(1):"—")+'</span><span>⬇ '+fmt(m.downloads)+'</span><span>💬 '+fmt(m.comment_count)+'</span><span>👁 '+fmt(m.views)+'</span></div><div class="acts"><a class="btn p" href="mod.html?id='+m.id+'">ডাউনলোড</a></div></div></article>';
 }
 function row(title,L,mid){var hs=S.t=="all"||S.t=="top";return '<section><h2><span>'+title+'</span>'+(mid&&hs?'<button class="more" data-t="'+mid+'">সব দেখুন ›</button>':'')+'</h2><div class="grid'+(hs?' hs':'')+'">'+L.map(card).join("")+'</div></section>'}
@@ -294,42 +312,45 @@ async function loadSite(){
  if(id)h='<iframe src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&mute=1&loop=1&playlist='+id+'&controls=0&modestbranding=1&playsinline=1&rel=0" title="" allow="autoplay; encrypted-media" tabindex="-1"></iframe>';
  else if(/^https:\/\/.+\.(mp4|webm)(\?.*)?$/i.test(u))h='<video src="'+esc(u)+'" autoplay muted loop playsinline></video>';
  else if(okUrl(c.hero_image))h='<img src="'+esc(c.hero_image)+'" alt="">';
- if(h)$("vid").innerHTML=h;
+ if(h&&!(navigator.connection&&navigator.connection.saveData)){var go=function(){$("vid").innerHTML=h};if(window.requestIdleCallback)requestIdleCallback(go,{timeout:2500});else setTimeout(go,1200)}
 }
+var CK="bs_idx_v1";
+function cacheGet(){try{var c=JSON.parse(localStorage.getItem(CK)||"null");return c&&c.games&&c.games.length?c:null}catch(e){return null}}
+function cacheSet(){try{localStorage.setItem(CK,JSON.stringify({games:S.games,g:S.g,cats:S.cats,mods:S.mods.slice(0,120),st:S.st}))}catch(e){}}
 async function loadStats(){
- var r=await Promise.all([db.from("categories").select("id,name,game_id"),db.from("mods").select("game_id,category_id,downloads").eq("status","approved").limit(5000)]);
- if(r[0].error||r[1].error)return;
- S.all={cats:r[0].data,mods:r[1].data};drawStrip();
+ var r=await db.rpc("get_stats");
+ if(r.error||!r.data)return;
+ S.st=r.data;drawStrip();cacheSet();
 }
 function drawStrip(){
- var A=S.all;if(!A)return;
- var byName={},order=[],nameOf={},byGame={},tot=0;
- A.cats.forEach(function(c){nameOf[c.id]=c.name;if(!(c.name in byName)){byName[c.name]=0;order.push(c.name)}});
- A.mods.forEach(function(m){var n=nameOf[m.category_id];if(n!=null)byName[n]++;byGame[m.game_id]=(byGame[m.game_id]||0)+1;tot+=m.downloads||0});
- var bx=order.slice(0,5).map(function(n){return [byName[n],n]})
-  .concat(S.games.slice(0,4).map(function(g){var t=/\(([^)]+)\)/.exec(g.name);return [byGame[g.id]||0,(t?t[1]:g.name)+" মড"]}))
-  .concat([[fmt(tot),"ডাউনলোড"]]);
+ var A=S.st;if(!A||!A.cats)return;
+ var bx=A.cats.slice(0,5).map(function(c){return [c.n,c.name]})
+  .concat(S.games.slice(0,4).map(function(g){var f=(A.games||[]).filter(function(x){return x.id==g.id})[0],t=/\(([^)]+)\)/.exec(g.name);return [f?f.n:0,(t?t[1]:g.name)+" মড"]}))
+  .concat([[fmt(A.downloads),"ডাউনলোড"]]);
  $("strip").innerHTML=bx.map(function(x){return '<div><b>'+x[0]+'</b><span>'+esc(x[1])+'</span></div>'}).join("");
 }
-async function loadGame(){
- skel();
+async function loadGame(quiet){
+ if(!quiet)skel();
  var r=await Promise.all([
   db.from("categories").select("id,name,image_url").eq("game_id",S.g).order("sort_order"),
   db.from("mods").select("id,title,cover_url,downloads,created_at,views,rating_sum,rating_count,comment_count,video_url,category_id,uploader:profiles!uploader_id(id,display_name,avatar_url,role,social_facebook,social_youtube,social_telegram)").eq("game_id",S.g).eq("status","approved").order("downloads",{ascending:false}).limit(200)
  ]);
- if(r[0].error||r[1].error){fail("ডেটা লোড করা যায়নি। config.js-এ Supabase URL ও কী ঠিক আছে কিনা দেখুন।");return}
- S.cats=r[0].data;S.mods=r[1].data;S.t="all";draw();
+ if(r[0].error||r[1].error){if(!quiet)fail("ডেটা লোড করা যায়নি। config.js-এ Supabase URL ও কী ঠিক আছে কিনা দেখুন।");return}
+ S.cats=r[0].data;S.mods=r[1].data;if(!quiet)S.t="all";draw();
+ if(S.games.length&&S.g==S.games[0].id)cacheSet();
 }
 async function boot(){
  if(typeof SUPABASE_URL=="undefined"||SUPABASE_URL.indexOf("supabase.co")<0){fail("config.js ফাইলে আপনার Supabase URL ও কী বসাতে হবে।");return}
  db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
  initAuth();loadSite();
- skel();
+ var c=cacheGet();
+ if(c){S.games=c.games;S.g=c.g;S.cats=c.cats;S.mods=c.mods;S.st=c.st;draw()}else skel();
  var r=await db.from("games").select("id,name,image_url").eq("active",true).order("sort_order");
- if(r.error){fail("ডেটা লোড করা যায়নি। config.js-এ Supabase URL ও কী ঠিক আছে কিনা দেখুন।");return}
+ if(r.error){if(!c)fail("ডেটা লোড করা যায়নি। config.js-এ Supabase URL ও কী ঠিক আছে কিনা দেখুন।");return}
  S.games=r.data;
  if(!S.games.length){fail("এখনো কোনো গেম যোগ হয়নি।");return}
- S.g=S.games[0].id;loadStats();await loadGame();
+ if(!c||!S.games.some(function(g){return g.id==S.g}))S.g=S.games[0].id;
+ loadStats();await loadGame(!!c);
 }
 document.addEventListener("click",function(e){
  var a=e.target.closest("[data-g]"),b=e.target.closest("[data-t]");
@@ -353,6 +374,7 @@ slider($("games"));slider($("tabs"));
 (function(){var t="BUSSID X BSBD STORE",el=$("neon"),i=0;if(!el)return;if(matchMedia("(prefers-reduced-motion:reduce)").matches){el.textContent=t;el.classList.add("done");return}function f(){el.textContent=t.slice(0,i++);if(i<=t.length)setTimeout(f,85);else el.classList.add("done")}f()})();
 boot();
 </script>
+<script src="track.js"></script>
 <script src="nav.js"></script>
 <script src="i18n.js"></script>
 </body>
