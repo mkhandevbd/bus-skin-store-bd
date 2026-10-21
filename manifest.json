@@ -1,0 +1,62 @@
+{
+  "name": "Bus Skin Store BD",
+  "short_name": "BusSkin BD",
+  "description": "বাস সিমুলেটর ইন্দোনেশিয়া (BUSSID) ও বাংলাদেশ (BSBD)-এর বাস স্কিন, বাস মড ও ম্যাপ মড ডাউনলোড করুন।",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1c1f3d",
+  "theme_color": "#0a7d5a",
+  "lang": "bn",
+  "dir": "ltr",
+  "categories": [
+    "games",
+    "entertainment"
+  ],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "আপলোড",
+      "short_name": "আপলোড",
+      "url": "/upload.html",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "প্রোফাইল",
+      "short_name": "প্রোফাইল",
+      "url": "/profile.html",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

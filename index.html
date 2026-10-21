@@ -169,8 +169,16 @@ h1.fire::after{left:68%;width:5px;height:5px;background:#ff6a00;animation-delay:
 .fbar select{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:5px 8px}
 .stage{width:100%;max-width:560px;justify-self:center}
 @media(max-width:640px){.stage{max-width:100%}.neon{font-size:12px;letter-spacing:.08em}}
+.apk{display:inline-block!important;margin:2px 0 10px}
 </style>
 <link rel="stylesheet" href="m.css">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BusSkin BD">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="bus" viewBox="0 0 120 56"><rect x="4" y="6" width="112" height="38" rx="7" fill="var(--b)"/><rect x="4" y="30" width="112" height="7" fill="var(--s)"/><g fill="#dff3ff" opacity=".92"><rect x="12" y="12" width="16" height="14" rx="2"/><rect x="32" y="12" width="16" height="14" rx="2"/><rect x="52" y="12" width="16" height="14" rx="2"/><rect x="72" y="12" width="16" height="14" rx="2"/><rect x="94" y="12" width="16" height="20" rx="2"/></g><circle cx="30" cy="46" r="7" fill="#1a1d24"/><circle cx="92" cy="46" r="7" fill="#1a1d24"/><circle cx="30" cy="46" r="3" fill="#9aa4b4"/><circle cx="92" cy="46" r="3" fill="#9aa4b4"/></symbol></svg>
@@ -306,8 +314,9 @@ function slider(box){
 function ytId(u){var m=/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/))([\w-]{11})/.exec(u||"");return m?m[1]:""}
 function okUrl(u){return /^https?:\/\//i.test(u||"")}
 async function loadSite(){
- var r=await db.from("site_settings").select("logo_url,hero_video,hero_image").eq("id",1).maybeSingle(),c=r.data||{};
+ var r=await db.from("site_settings").select("logo_url,hero_video,hero_image,apk_url").eq("id",1).maybeSingle(),c=r.data||{};
  if(okUrl(c.logo_url)){var sv=$("logo").querySelector("svg");if(sv)sv.outerHTML='<img class="logoimg" src="'+esc(c.logo_url)+'" alt="">'}
+ if(okUrl(c.apk_url)&&!$("apkb")){var sp=document.querySelector(".hero .sub");if(sp){var a2=document.createElement("a");a2.id="apkb";a2.className="btn p apk";a2.target="_blank";a2.rel="noopener noreferrer";a2.href=c.apk_url;a2.textContent="📲 অ্যাপ ডাউনলোড (Android)";sp.insertAdjacentElement("afterend",a2)}}
  var u=(c.hero_video||"").trim(),id=ytId(u),h="";
  if(id)h='<iframe src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&mute=1&loop=1&playlist='+id+'&controls=0&modestbranding=1&playsinline=1&rel=0" title="" allow="autoplay; encrypted-media" tabindex="-1"></iframe>';
  else if(/^https:\/\/.+\.(mp4|webm)(\?.*)?$/i.test(u))h='<video src="'+esc(u)+'" autoplay muted loop playsinline></video>';
@@ -375,6 +384,7 @@ slider($("games"));slider($("tabs"));
 boot();
 </script>
 <script src="track.js"></script>
+<script src="pwa.js"></script>
 <script src="nav.js"></script>
 <script src="i18n.js"></script>
 </body>

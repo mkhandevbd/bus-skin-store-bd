@@ -6,7 +6,7 @@
     "ডাউনলোড": "Download", "ডাউনলোড করুন": "Download", "জনপ্রিয়": "Popular",
     "বাস স্কিন": "Bus Skin", "বাস মড": "Bus Mod", "ম্যাপ মড": "Map Mod",
     "ভিউ": "Views", "সাইজ": "Size", "তারিখ": "Date", "বিবরণ": "Description", "ক্রেডিট": "Credit",
-    "আপলোডার": "Uploader", "ভাষা": "Language", "সব দেখুন ›": "See all ›", "করুন।": ".", "সাজান": "Sort", "রেটিং": "Rating", "ভিডিও সহ": "With video", "বেশি ডাউনলোড": "Most downloads", "বেশি কমেন্ট": "Most comments", "বেশি ভিউ": "Most views", "সর্বোচ্চ রেটিং": "Top rated", "৩★ বা বেশি": "3★ or more", "৪★ বা বেশি": "4★ or more", "🔥 টপ": "🔥 Top", "রেটিং ও কমেন্ট": "Ratings & Comments", "কমেন্ট করুন": "Post comment", "প্রোফাইল": "Profile", "যোগ দিয়েছেন": "Joined", "হোম": "Home", "অজানা": "Unknown", "অন্য লিংক": "Other link",
+    "আপলোডার": "Uploader", "অ্যাপ ইনস্টল করুন": "Install app", "ইনস্টল": "Install", "📲 অ্যাপ": "📲 App", "📲 অ্যাপ ডাউনলোড (Android)": "📲 Download App (Android)", "ভাষা": "Language", "সব দেখুন ›": "See all ›", "করুন।": ".", "সাজান": "Sort", "রেটিং": "Rating", "ভিডিও সহ": "With video", "বেশি ডাউনলোড": "Most downloads", "বেশি কমেন্ট": "Most comments", "বেশি ভিউ": "Most views", "সর্বোচ্চ রেটিং": "Top rated", "৩★ বা বেশি": "3★ or more", "৪★ বা বেশি": "4★ or more", "🔥 টপ": "🔥 Top", "রেটিং ও কমেন্ট": "Ratings & Comments", "কমেন্ট করুন": "Post comment", "প্রোফাইল": "Profile", "যোগ দিয়েছেন": "Joined", "হোম": "Home", "অজানা": "Unknown", "অন্য লিংক": "Other link",
     "নতুন যোগ হয়েছে": "Newly added", "ঠিক আছে": "OK", "বন্ধ করুন": "Close", "মুছুন": "Delete"
   };
   var S = [

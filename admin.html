@@ -84,6 +84,14 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 .two2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
 </style>
 <link rel="stylesheet" href="m.css">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BusSkin BD">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#0a7d5a">
 </head>
 <body>
 <header><div class="wrap bar">
@@ -316,12 +324,13 @@ async function pUs(){
 
 /* সাইট সেটিং: লোগো ও হোমপেজের ভিডিও/ছবি (শুধু Owner) */
 async function pSt(){
- var r=await db.from("site_settings").select("logo_url,hero_video,hero_image").eq("id",1).maybeSingle(),c=r.data||{};
+ var r=await db.from("site_settings").select("logo_url,hero_video,hero_image,apk_url").eq("id",1).maybeSingle(),c=r.data||{};
  var im=function(u){return /^https?:\/\//i.test(u||"")?'<img class="stp" src="'+esc(u)+'" alt="">':'<div class="muted">এখনো কিছু দেওয়া হয়নি</div>'};
  $("panel").innerHTML=
  '<div class="box"><h3>সাইটের লোগো</h3><p class="muted">হেডারে বাসের আইকনের বদলে এই ছবি দেখাবে (PNG হলে ভালো, ৫ MB-এর কম)।</p>'+im(c.logo_url)+'<div class="form" style="margin-top:10px"><label>নতুন লোগো<input type="file" id="st_l" accept="image/png,image/jpeg,image/webp"></label><div class="inl"><button class="btn p" data-st="logo">লোগো সেভ করুন</button><button class="btn d" data-st="logo0">লোগো মুছুন</button></div></div></div>'+
  '<div class="box"><h3>হোমপেজের ৩ডি স্ক্রিনের ভিডিও</h3><p class="muted">YouTube লিংক অথবা সরাসরি .mp4 লিংক দিন। ভিডিও শব্দ ছাড়া নিজে নিজে চলবে। ফাঁকা রাখলে নিচের ছবি, ছবিও না থাকলে বাসের অ্যানিমেশন দেখাবে।</p><div class="inl"><label>ভিডিও লিংক<input type="url" id="st_v" value="'+esc(c.hero_video||"")+'" placeholder="https://www.youtube.com/watch?v=..."></label><button class="btn p" data-st="hvid">সেভ</button></div></div>'+
- '<div class="box"><h3>৩ডি স্ক্রিনের ছবি (ভিডিও না থাকলে)</h3>'+im(c.hero_image)+'<div class="form" style="margin-top:10px"><label>নতুন ছবি<input type="file" id="st_i" accept="image/png,image/jpeg,image/webp"></label><div class="inl"><button class="btn p" data-st="himg">ছবি সেভ করুন</button><button class="btn d" data-st="himg0">ছবি মুছুন</button></div></div></div>';
+ '<div class="box"><h3>৩ডি স্ক্রিনের ছবি (ভিডিও না থাকলে)</h3>'+im(c.hero_image)+'<div class="form" style="margin-top:10px"><label>নতুন ছবি<input type="file" id="st_i" accept="image/png,image/jpeg,image/webp"></label><div class="inl"><button class="btn p" data-st="himg">ছবি সেভ করুন</button><button class="btn d" data-st="himg0">ছবি মুছুন</button></div></div></div>'+
+ '<div class="box"><h3>অ্যাপের (APK) ডাউনলোড লিংক</h3><p class="muted">PWABuilder দিয়ে APK বানিয়ে Google Drive বা Telegram-এ রেখে তার লিংক এখানে দিন। হোমপেজে "অ্যাপ ডাউনলোড (Android)" বাটন আসবে। ফাঁকা রাখলে বাটন থাকবে না।</p><div class="inl"><label>APK-এর লিংক<input type="url" id="st_a" value="'+esc(c.apk_url||"")+'" placeholder="https://"></label><button class="btn p" data-st="apk">সেভ</button></div></div>';
 }
 document.addEventListener("click",async function(e){
  var b=e.target.closest("[data-st]");if(!b)return;
@@ -329,6 +338,7 @@ document.addEventListener("click",async function(e){
  try{
   if(a=="logo"||a=="himg"){var f=$(a=="logo"?"st_l":"st_i").files[0];if(!f){note("আগে ছবি বাছুন");return}b.disabled=true;var u=await upImg(f);x=await db.from("site_settings").upsert(a=="logo"?{id:1,logo_url:u}:{id:1,hero_image:u});b.disabled=false;if(x.error)throw x.error;note("সেভ হয়েছে");pSt()}
   if(a=="logo0"||a=="himg0"){x=await db.from("site_settings").upsert(a=="logo0"?{id:1,logo_url:null}:{id:1,hero_image:null});if(x.error)throw x.error;note("মুছে গেছে");pSt()}
+  if(a=="apk"){var v2=$("st_a").value.trim();if(v2&&!/^https:\/\//i.test(v2)){note("লিংক https:// দিয়ে শুরু হতে হবে");return}x=await db.from("site_settings").upsert({id:1,apk_url:v2||null});if(x.error)throw x.error;note("সেভ হয়েছে")}
   if(a=="hvid"){var v=$("st_v").value.trim();if(v&&!/^https:\/\//i.test(v)){note("লিংক https:// দিয়ে শুরু হতে হবে");return}x=await db.from("site_settings").upsert({id:1,hero_video:v||null});if(x.error)throw x.error;note("সেভ হয়েছে")}
  }catch(er){b.disabled=false;err(er)}
 });
@@ -425,6 +435,7 @@ try{var s0=localStorage.getItem("t");if(s0)R.dataset.theme=s0}catch(e){}
 $("theme").onclick=function(){var cur=R.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),n=cur=="dark"?"light":"dark";R.dataset.theme=n;try{localStorage.setItem("t",n)}catch(e){}};
 init();
 </script>
+<script src="pwa.js"></script>
 <script src="nav.js"></script>
 </body>
 </html>
