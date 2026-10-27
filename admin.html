@@ -82,6 +82,7 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 .bar em{font-style:normal;font-size:10px;color:var(--muted);margin-bottom:2px}
 .bar span{font-size:10px;color:var(--muted);margin-top:3px}
 .two2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.vtbox{border:1px dashed var(--g);border-radius:12px;padding:12px;display:grid;gap:10px}
 </style>
 <link rel="stylesheet" href="m.css">
 <link rel="manifest" href="manifest.json">
@@ -111,7 +112,7 @@ var $=function(i){return document.getElementById(i)},
 esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})},
 db,ME,G=[],C=[],
 ROLES=["user","vip","premium","moderator","owner"],
-TABS=[["ov","ওভারভিউ"],["ap","মড তালিকা"],["add","মড যোগ"],["gm","গেম ও ক্যাটাগরি",1],["us","ইউজার ও ব্যাজ",1],["ad","বিজ্ঞাপন",1],["sv","সার্ভার",1],["st","সাইট সেটিং",1]],
+TABS=[["ov","ওভারভিউ"],["ap","মড তালিকা"],["add","মড যোগ"],["gm","গেম ও ক্যাটাগরি",1],["us","ইউজার ও ব্যাজ",1],["ad","বিজ্ঞাপন",1],["sv","সার্ভার",1],["st","সাইট সেটিং",1],["bk","ব্যাকআপ",1]],
 ST={pending:"অপেক্ষমাণ",approved:"অ্যাপ্রুভড",rejected:"বাতিল"};
 
 function note(t){var n=$("toast");n.textContent=t;n.hidden=false;clearTimeout(note.t);note.t=setTimeout(function(){n.hidden=true},4500)}
@@ -204,7 +205,7 @@ function shell(){
 }
 function show(p){
  document.querySelectorAll("#tabs .tab").forEach(function(b){b.setAttribute("aria-selected",b.dataset.p==p)});
- ({ov:pOv,ap:pAp,add:pAdd,gm:pGm,us:pUs,ad:pAd,sv:pSv,st:pSt})[p]();
+ ({ov:pOv,ap:pAp,add:pAdd,gm:pGm,us:pUs,ad:pAd,sv:pSv,st:pSt,bk:pBk})[p]();
 }
 
 /* ওভারভিউ: দৈনিক ভিজিটর ও অ্যাক্টিভিটি */
@@ -239,13 +240,13 @@ async function pAp(){
 }
 async function listMods(){
  var st=$("fs").value,l=$("list");l.innerHTML='<div class="muted">লোড হচ্ছে...</div>';
- var r=await db.from("mods").select("id,title,status,alt_link,created_at,category_id,game_id,downloads,views,uploader:profiles!uploader_id(display_name,role)").eq("status",st).order("created_at",{ascending:false}).limit(100);
+ var r=await db.from("mods").select("id,title,status,alt_link,created_at,category_id,game_id,downloads,views,visit_url,visit_secs,visit_times,uploader:profiles!uploader_id(display_name,role)").eq("status",st).order("created_at",{ascending:false}).limit(100);
  if(r.error){err(r.error);return}
  if(!r.data.length){l.innerHTML='<div class="empty">এই অবস্থায় কোনো মড নেই।</div>';return}
  l.innerHTML=r.data.map(function(m){
   var c=C.find(function(x){return x.id==m.category_id}),u=m.uploader||{};
   var b=(m.status=="pending"?'<button class="btn p" data-a="ok" data-id="'+m.id+'">অ্যাপ্রুভ</button><button class="btn" data-a="no" data-id="'+m.id+'">বাতিল</button>':"")+'<a class="btn" href="edit.html?id='+m.id+'">এডিট</a><button class="btn d" data-a="del" data-id="'+m.id+'">মুছুন</button>';
-  return '<div class="row"><div class="grow"><b>'+esc(m.title)+'</b><div class="muted">'+esc(c?c.name:"")+' · '+esc(u.display_name||"অজানা")+' '+pill(u.role)+(/^https?:\/\//i.test(m.alt_link||"")?' · <a href="'+esc(m.alt_link)+'" target="_blank" rel="noopener noreferrer">লিংক</a>':"")+' · <a href="mod.html?id='+m.id+'" target="_blank">দেখুন</a> · ⬇ '+(m.downloads||0)+' · 👁 '+(m.views||0)+'</div></div>'+b+'</div>';
+  return '<div class="row"><div class="grow"><b>'+esc(m.title)+'</b><div class="muted">'+esc(c?c.name:"")+' · '+esc(u.display_name||"অজানা")+' '+pill(u.role)+(/^https?:\/\//i.test(m.alt_link||"")?' · <a href="'+esc(m.alt_link)+'" target="_blank" rel="noopener noreferrer">লিংক</a>':"")+' · <a href="mod.html?id='+m.id+'" target="_blank">দেখুন</a> · ⬇ '+(m.downloads||0)+' · 👁 '+(m.views||0)+(m.visit_times>0?' · 🌐 টাস্ক: <a href="'+esc(m.visit_url)+'" target="_blank" rel="noopener noreferrer">'+esc(String(m.visit_url).replace(/^https?:\/\//,"").slice(0,40))+'</a> ×'+m.visit_times+' ('+m.visit_secs+' সে)':"")+'</div></div>'+b+'</div>';
  }).join("");
 }
 
@@ -266,6 +267,7 @@ function pAdd(){
  '<label>লেখকের Facebook লিংক (ঐচ্ছিক)<input type="url" id="sf" placeholder="https://"></label>'+
  '<label>লেখকের YouTube লিংক (ঐচ্ছিক)<input type="url" id="sy" placeholder="https://"></label>'+
  '<label>লেখকের Telegram লিংক (ঐচ্ছিক)<input type="url" id="st" placeholder="https://"></label>'+
+ '<div class="vtbox"><b>🌐 ওয়েবসাইট ভিজিট টাস্ক (ঐচ্ছিক)</b><div class="muted">চালু করলে ডাউনলোডের আগে ইউজারকে নিচের ওয়েবসাইট খুলে কিছুক্ষণ থাকতে হবে (ব্যাজওয়ালারা বাদ)। শুধু নিজের বা নিরাপদ সাইটের লিংক দিন, মডারেটর লিংক দেখে মড অ্যাপ্রুভ করবে।</div><div class="two"><label>কতবার ভিজিট<select id="vtn"><option value="0">টাস্ক নেই</option><option value="1">১ বার</option><option value="2">২ বার</option><option value="3">৩ বার</option><option value="4">৪ বার</option><option value="5">৫ বার</option></select></label><label>প্রতিবার কত সেকেন্ড<select id="vts"><option value="5">৫</option><option value="10" selected>১০</option><option value="15">১৫</option><option value="20">২০</option><option value="30">৩০</option><option value="45">৪৫</option><option value="60">৬০</option></select></label></div><label>ওয়েবসাইটের লিংক (https://...)<input type="url" id="vtu" placeholder="https://"></label></div>'+
  '<label>মডের ফাইল (সর্বোচ্চ ২০ MB, Telegram-এ জমা হবে)<input type="file" id="mfile"><div class="muted" id="fi"></div></label>'+
  '<label>অথবা Google Drive লিংক (২০ MB-এর বেশি হলে)<input type="url" id="ml" placeholder="https://drive.google.com/..."></label>'+
  '<button class="btn p" id="ms">যোগ করুন</button><div class="muted" id="mm"></div></div></div>';
@@ -279,6 +281,8 @@ function pAdd(){
   if(fl&&dl){note("ফাইল বা Drive লিংক, যেকোনো একটা দিন");return}
   if(fl&&fl.size>20*1048576){note("ফাইল ২০ MB-এর বেশি, তাই Google Drive লিংক দিন");return}
   if(dl&&!/^https:\/\/(drive|docs)\.google\.com\//i.test(dl)){note("শুধু Google Drive লিংক চলবে");return}
+ var vtn=+$("vtn").value,vtu=$("vtu").value.trim();
+ if(vtn>0&&!/^https:\/\/[^\s\/]+\.[^\s]+$/i.test(vtu)){note("ভিজিটের ওয়েবসাইটের লিংক দিন (https:// দিয়ে শুরু)");return}
   b.disabled=true;
   var items=(mf?[{f:mf}]:[]).concat(pf.map(function(f){return {f:f}})),total=items.reduce(function(a,x){return a+x.f.size},0)+(fl?fl.size:0)||1,done=0,ui=upUI();
   async function run(file,path,label,srv){
@@ -292,7 +296,7 @@ function pAdd(){
    var fj=null;
    if(fl)fj=await run(fl,"/file","মডের ফাইল আপলোড হচ্ছে ("+(fl.size/1048576).toFixed(1)+" MB)...","Telegram-এ ফাইল সংরক্ষণ হচ্ছে, একটু অপেক্ষা করুন...");
    ui.set(.97,"তথ্য সংরক্ষণ হচ্ছে...");ui.spin("তথ্য সংরক্ষণ হচ্ছে...");
-   var r=await db.from("mods").insert({game_id:+$("mg").value,category_id:cat,title:t,description:$("md").value.trim()||null,cover_url:cover,previews:pv,video_url:$("mvd").value.trim()||null,game_version:$("mv").value.trim()||null,install_steps:$("mi").value.trim()||null,credit_name:$("mn").value.trim()||null,social_facebook:$("sf").value.trim()||null,social_youtube:$("sy").value.trim()||null,social_telegram:$("st").value.trim()||null,dl_kind:fl?"tg":"drive",file_size:fl?fl.size:null,uploader_id:ME.id,status:"approved",approved_at:new Date().toISOString(),reviewed_by:ME.id}).select("id").single();
+   var r=await db.from("mods").insert({game_id:+$("mg").value,category_id:cat,title:t,description:$("md").value.trim()||null,cover_url:cover,previews:pv,video_url:$("mvd").value.trim()||null,visit_times:vtn,visit_secs:+$("vts").value,visit_url:vtn>0?vtu:null,game_version:$("mv").value.trim()||null,install_steps:$("mi").value.trim()||null,credit_name:$("mn").value.trim()||null,social_facebook:$("sf").value.trim()||null,social_youtube:$("sy").value.trim()||null,social_telegram:$("st").value.trim()||null,dl_kind:fl?"tg":"drive",file_size:fl?fl.size:null,uploader_id:ME.id,status:"approved",approved_at:new Date().toISOString(),reviewed_by:ME.id}).select("id").single();
    if(r.error)throw r.error;
    var r2=await db.from("mod_secrets").insert(fl?{mod_id:r.data.id,tg_bot_id:fj.bot_id,tg_file_id:fj.file_id,file_name:fj.name}:{mod_id:r.data.id,drive_link:dl});
    if(r2.error){await db.from("mods").delete().eq("id",r.data.id);throw r2.error}
@@ -321,6 +325,25 @@ async function pUs(){
   return '<div class="row">'+(u.avatar_url?'<img class="thumb" src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':'<div class="thumb"></div>')+'<div class="grow">'+esc(u.display_name||"নামহীন")+'</div><select data-u="'+u.id+'"'+(u.id==ME.id?" disabled":"")+'>'+ROLES.map(function(x){return '<option'+(x==u.role?" selected":"")+'>'+x+'</option>'}).join("")+'</select></div>';
  }).join("");
 }
+
+/* ব্যাকআপ (শুধু Owner) */
+function pBk(){
+ $("panel").innerHTML='<div class="box"><h3>ব্যাকআপ</h3><p class="muted">সব মড, ইউজার, কমেন্ট, রেটিং ও সেটিং এক ফাইলে (JSON) নামবে। ফাইলটা নিজের নিরাপদ জায়গায় (যেমন প্রাইভেট Google Drive) রাখুন। ছবি ImgBB-তে আর মডের ফাইল Telegram চ্যানেলে আলাদা থাকে, ওগুলো এই ফাইলে নেই (শুধু তার তথ্য আছে)। মাসে অন্তত একবার ব্যাকআপ নিন।</p><div class="inl"><button class="btn p" data-bk="0">ব্যাকআপ নামান</button><button class="btn d" data-bk="1">চাবি ও টোকেনসহ নামান (গোপন)</button></div><p class="muted" style="margin-top:10px">⚠️ "চাবিসহ" ফাইলে বটের টোকেন ও ImgBB চাবি থাকে, ওটা কাউকে দেবেন না, শুধু নিজের কাছে রাখুন।</p></div>';
+}
+document.addEventListener("click",async function(e){
+ var b=e.target.closest("[data-bk]");if(!b)return;
+ b.disabled=true;
+ try{
+  var w=await wurl(),s0=(await db.auth.getSession()).data.session;
+  if(!w)throw new Error("সার্ভারের লিংক সেট করা হয়নি");
+  var r=await fetch(w+"/backup?secrets="+b.dataset.bk,{headers:{Authorization:"Bearer "+s0.access_token}});
+  if(!r.ok){var j={};try{j=await r.json()}catch(x){}throw new Error(j.error||"ব্যাকআপ নেওয়া যায়নি")}
+  var bl=await r.blob(),a=document.createElement("a");
+  a.href=URL.createObjectURL(bl);a.download="bsstore-backup-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();a.remove();
+  note("ব্যাকআপ নেমেছে ✔");
+ }catch(er){err(er)}
+ b.disabled=false;
+});
 
 /* সাইট সেটিং: লোগো ও হোমপেজের ভিডিও/ছবি (শুধু Owner) */
 async function pSt(){

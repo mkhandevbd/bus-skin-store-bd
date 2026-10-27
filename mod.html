@@ -263,21 +263,52 @@ function stage(n){
   left--;up();
   if(left<=0){
    clearInterval(t);if(!bad)$("ct").textContent="প্রস্তুত ✅";$("pb").style.width="100%";
-   var x=$("nx");x.disabled=false;x.textContent=n<ROUNDS?"পরের ধাপে যান":"ডাউনলোড করুন";
-   x.onclick=n<ROUNDS?function(){stage(n+1)}:go;
+   var x=$("nx");x.disabled=false;x.textContent=(n<ROUNDS||needVisit())?"পরের ধাপে যান":"ডাউনলোড করুন";
+   x.onclick=n<ROUNDS?function(){stage(n+1)}:(needVisit()?function(){visitStage(1)}:go);
   }
  },1000);
+}
+var VP="";
+function needVisit(){return !!(M.dl_kind&&(M.visit_times|0)>0&&safe(M.visit_url))}
+function hostOf(u){try{return new URL(u).hostname.replace(/^www\./,"")}catch(e){return u}}
+async function vcall(path,q){var w=await wurl(),r=await fetch(w+path+"?"+q),j=await r.json();if(!r.ok)throw new Error(j.error||"সমস্যা হয়েছে");return j}
+function vstart(vp){return vcall("/vstart","mod="+M.id+"&t="+encodeURIComponent(TK)+"&vp="+encodeURIComponent(vp||""))}
+function vdone(st){return vcall("/vdone","mod="+M.id+"&st="+encodeURIComponent(st))}
+function visitStage(k){
+ var N=M.visit_times|0,secs=M.visit_secs||10;
+ $("dl").innerHTML='<h3>ডাউনলোড (ওয়েবসাইট ভিজিট '+k+'/'+N+')</h3><div class="visitcard"><b>🌐 '+esc(hostOf(M.visit_url))+'</b><p>ওয়েবসাইটটি খুলে <b>'+secs+' সেকেন্ড</b> ঘুরে দেখুন, তারপর এখানে ফিরে এসে "নিশ্চিত করুন" চাপুন।</p><button class="btn p dlb" id="vo">ওয়েবসাইট খুলুন ↗</button><div class="prog" style="margin-top:10px"><i id="vb"></i></div><p class="muted" id="vc"></p><button class="btn dlb" id="vd2" disabled>নিশ্চিত করুন</button><p class="muted" style="margin:8px 0 0">⚠️ এটা বাইরের ওয়েবসাইট, নিজ দায়িত্বে খুলুন।</p></div>';
+ var st="",t0=0,timer=null;
+ $("vo").onclick=function(){
+  window.open(M.visit_url,"_blank","noopener,noreferrer");
+  t0=Date.now();this.disabled=true;this.textContent="ওয়েবসাইট খোলা হয়েছে ✔";
+  vstart(VP).then(function(j){st=j.st}).catch(function(e){$("vc").textContent=e.message});
+  timer=setInterval(function(){
+   var el=(Date.now()-t0)/1000,left=Math.max(0,Math.ceil(secs-el));
+   $("vb").style.width=Math.min(100,el/secs*100)+"%";
+   $("vc").textContent=left>0?"ওয়েবসাইটে থাকুন: আরও "+left+" সেকেন্ড":"সময় পূর্ণ ✅ এবার নিশ্চিত করুন";
+   if(left<=0){clearInterval(timer);$("vd2").disabled=false}
+  },500);
+ };
+ $("vd2").onclick=async function(){
+  if(!st){note("একটু অপেক্ষা করুন...");return}
+  this.disabled=true;
+  try{
+   var j=await vdone(st);VP=j.vp;
+   if(k<N)visitStage(k+1);
+   else{$("dl").innerHTML='<h3>ডাউনলোড</h3><p class="muted">সব ধাপ শেষ ✅ এবার ডাউনলোড করুন।</p><button class="btn p dlb" id="go">ডাউনলোড করুন</button>';$("go").onclick=go}
+  }catch(e){note(e.message);this.disabled=false}
+ };
 }
 function go(){
  if(M.dl_kind){
   if(!TK){note("ডাউনলোডের টিকিট পাওয়া যায়নি, পেজ রিফ্রেশ করুন");return}
-  var u=WURL+"/download?mod="+M.id+"&t="+encodeURIComponent(TK);
+  var u=WURL+"/download?mod="+M.id+"&t="+encodeURIComponent(TK)+(VP?"&vp="+encodeURIComponent(VP):"");
   M.downloads=(M.downloads||0)+1;$("sd").textContent=fmt(M.downloads);
   window.open(u,"_blank","noopener");
   return;
  }
  var l=safe(M.alt_link);if(!l)return;
- db.rpc("increment_downloads",{p_id:M.id});
+ db.rpc("increment_downloads",{p_id:M.id}).then(function(){});
  M.downloads=(M.downloads||0)+1;$("sd").textContent=fmt(M.downloads);
  window.open(l,"_blank","noopener");
 }
@@ -387,7 +418,7 @@ async function init(){
  var r=await db.from("mods").select("*,uploader:profiles!uploader_id(id,display_name,avatar_url,role,social_facebook,social_youtube,social_telegram),game:games(name),category:categories(name)").eq("id",id).maybeSingle();
  if(r.error||!r.data){fail("মড পাওয়া যায়নি।");return}
  ADS.start(role);M=r.data;render();
- try{var k="v"+id;if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,1);db.rpc("increment_views",{p_id:id})}}catch(e){}
+ try{var k="v"+id;if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,1);db.rpc("increment_views",{p_id:id}).then(function(){})}}catch(e){}
 }
 document.addEventListener("click",function(e){
  var t=e.target.closest(".thumbs button");if(t){show(+t.dataset.i);return}

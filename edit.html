@@ -86,6 +86,7 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 .opt{display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;cursor:pointer}
 .curimg{max-width:220px;max-height:130px;border-radius:10px;border:1px solid var(--line);object-fit:cover}
 .sel{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 10px;width:100%;font:inherit;color:inherit}
+.vtbox{border:1px dashed var(--g);border-radius:12px;padding:12px;display:grid;gap:10px}
 </style>
 <link rel="stylesheet" href="m.css">
 <link rel="manifest" href="manifest.json">
@@ -233,6 +234,10 @@ async function init(){
  G=q[0].data||[];C=q[1].data||[];KEEP=(M.previews||[]).filter(function(u){return /^https?:\/\//i.test(u)});
  render();
 }
+function vtHTML(m){
+ var t=m.visit_times|0,s=m.visit_secs||10,o=function(a,sel){return a.map(function(x){return '<option value="'+x[0]+'"'+(x[0]==sel?" selected":"")+'>'+x[1]+'</option>'}).join("")};
+ return '<div class="vtbox"><b>🌐 ওয়েবসাইট ভিজিট টাস্ক (ঐচ্ছিক)</b><div class="muted">চালু করলে ডাউনলোডের আগে ইউজারকে নিচের ওয়েবসাইট খুলে কিছুক্ষণ থাকতে হবে (ব্যাজওয়ালারা বাদ)।'+(STAFF?'':' এটা বদলালে মড আবার অ্যাপ্রুভের জন্য অপেক্ষমাণ হবে।')+'</div><div class="two"><label>কতবার ভিজিট<select id="vtn">'+o([[0,"টাস্ক নেই"],[1,"১ বার"],[2,"২ বার"],[3,"৩ বার"],[4,"৪ বার"],[5,"৫ বার"]],t)+'</select></label><label>প্রতিবার কত সেকেন্ড<select id="vts">'+o([[5,"৫"],[10,"১০"],[15,"১৫"],[20,"২০"],[30,"৩০"],[45,"৪৫"],[60,"৬০"]],s)+'</select></label></div><label>ওয়েবসাইটের লিংক (https://...)<input type="url" id="vtu" value="'+esc(m.visit_url||"")+'" placeholder="https://"></label></div>';
+}
 function render(){
  var m=M,cur=m.dl_kind=="tg"?"Telegram ফাইল"+(m.file_size?" ("+(m.file_size/1048576).toFixed(1)+" MB)":""):m.dl_kind=="drive"?"Google Drive লিংক (গোপন রাখা আছে)":(m.alt_link?"পুরনো লিংক":"নেই");
  $("app").innerHTML='<h1>মড এডিট করুন</h1>'+
@@ -252,7 +257,7 @@ function render(){
  '<label>Facebook লিংক<input type="url" id="sf" value="'+esc(m.social_facebook||"")+'" placeholder="https://"></label>'+
  '<label>YouTube লিংক<input type="url" id="sy" value="'+esc(m.social_youtube||"")+'" placeholder="https://"></label>'+
  '<label>Telegram লিংক<input type="url" id="st" value="'+esc(m.social_telegram||"")+'" placeholder="https://"></label>'+
- '<div><b style="font-size:14px">মডের ফাইল</b><div class="muted" style="margin:2px 0 8px">বর্তমান: '+esc(cur)+'</div>'+
+ ''+vtHTML(m)+'<div><b style="font-size:14px">মডের ফাইল</b><div class="muted" style="margin:2px 0 8px">বর্তমান: '+esc(cur)+'</div>'+
  '<label class="opt"><input type="radio" name="dk" value="keep" checked> আগেরটাই থাকুক</label>'+
  '<label class="opt"><input type="radio" name="dk" value="file"> নতুন ফাইল আপলোড করব (সর্বোচ্চ ২০ MB)</label>'+
  '<label class="opt"><input type="radio" name="dk" value="drive"> নতুন Google Drive লিংক দেব</label>'+
@@ -285,6 +290,8 @@ async function save(){
  var vd=$("vd").value.trim();
  if(vd&&!/^https?:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//i.test(vd)){note("ভিডিও লিংক YouTube-এর হতে হবে");return}
  if((mf?[mf]:[]).concat(pf).some(function(f){return f.size>MAXMB*1048576})){note("প্রতিটি ছবি "+MAXMB+" MB-এর কম হতে হবে");return}
+ var vtn=+$("vtn").value,vtu=$("vtu").value.trim();
+ if(vtn>0&&!/^https:\/\/[^\s\/]+\.[^\s]+$/i.test(vtu)){note("ভিজিটের ওয়েবসাইটের লিংক দিন (https:// দিয়ে শুরু)");return}
  var b=$("send");b.disabled=true;
  var total=(mf?mf.size:0)+pf.reduce(function(a,f){return a+f.size},0)+(mode=="file"?fl.size:0)||1,done=0,ui=upUI();
  async function run(file,path,label,srv){
@@ -300,7 +307,7 @@ async function save(){
   var fj=null;
   if(mode=="file")fj=await run(fl,"/file","মডের ফাইল আপলোড হচ্ছে ("+(fl.size/1048576).toFixed(1)+" MB)...","Telegram-এ ফাইল সংরক্ষণ হচ্ছে, একটু অপেক্ষা করুন...");
   ui.set(.97,"তথ্য সংরক্ষণ হচ্ছে...");ui.spin("তথ্য সংরক্ষণ হচ্ছে...");
-  var upd={game_id:+$("g").value,category_id:cat,title:t,description:$("d").value.trim()||null,cover_url:cover,previews:pv,video_url:vd||null,game_version:$("v").value.trim()||null,install_steps:$("i").value.trim()||null,credit_name:$("n").value.trim()||null,social_facebook:soc[0]||null,social_youtube:soc[1]||null,social_telegram:soc[2]||null};
+  var upd={visit_times:vtn,visit_secs:+$("vts").value,visit_url:vtn>0?vtu:null,game_id:+$("g").value,category_id:cat,title:t,description:$("d").value.trim()||null,cover_url:cover,previews:pv,video_url:vd||null,game_version:$("v").value.trim()||null,install_steps:$("i").value.trim()||null,credit_name:$("n").value.trim()||null,social_facebook:soc[0]||null,social_youtube:soc[1]||null,social_telegram:soc[2]||null};
   if(mode=="file"){upd.dl_kind="tg";upd.file_size=fl.size}
   if(mode=="drive"){upd.dl_kind="drive";upd.file_size=null}
   if(mode!="keep"){

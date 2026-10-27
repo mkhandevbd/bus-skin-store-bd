@@ -78,6 +78,7 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 h1{background:linear-gradient(90deg,var(--g),#0a84ff,#bf5af2,var(--g));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:rgb 6s linear infinite}
 .box{transition:transform .2s,box-shadow .2s}.box:hover{box-shadow:0 8px 26px rgba(0,0,0,.08)}
 .form label{transition:transform .15s}
+.vtbox{border:1px dashed var(--g);border-radius:12px;padding:12px;display:grid;gap:10px}
 </style>
 <link rel="stylesheet" href="m.css">
 <link rel="manifest" href="manifest.json">
@@ -173,6 +174,7 @@ function form(){
  '<label>আপনার Facebook লিংক (ঐচ্ছিক)<input type="url" id="sf" placeholder="https://"></label>'+
  '<label>আপনার YouTube লিংক (ঐচ্ছিক)<input type="url" id="sy" placeholder="https://"></label>'+
  '<label>আপনার Telegram লিংক (ঐচ্ছিক)<input type="url" id="st" placeholder="https://"></label>'+
+ '<div class="vtbox"><b>🌐 ওয়েবসাইট ভিজিট টাস্ক (ঐচ্ছিক)</b><div class="muted">চালু করলে ডাউনলোডের আগে ইউজারকে নিচের ওয়েবসাইট খুলে কিছুক্ষণ থাকতে হবে (ব্যাজওয়ালারা বাদ)। শুধু নিজের বা নিরাপদ সাইটের লিংক দিন, মডারেটর লিংক দেখে মড অ্যাপ্রুভ করবে।</div><div class="two"><label>কতবার ভিজিট<select id="vtn"><option value="0">টাস্ক নেই</option><option value="1">১ বার</option><option value="2">২ বার</option><option value="3">৩ বার</option><option value="4">৪ বার</option><option value="5">৫ বার</option></select></label><label>প্রতিবার কত সেকেন্ড<select id="vts"><option value="5">৫</option><option value="10" selected>১০</option><option value="15">১৫</option><option value="20">২০</option><option value="30">৩০</option><option value="45">৪৫</option><option value="60">৬০</option></select></label></div><label>ওয়েবসাইটের লিংক (https://...)<input type="url" id="vtu" placeholder="https://"></label></div>'+
  '<label>মডের ফাইল * (সর্বোচ্চ ২০ MB, সরাসরি আপলোড)<input type="file" id="fl"><div class="muted" id="fi"></div></label>'+
  '<label>অথবা Google Drive লিংক (২০ MB-এর বেশি হলে)<input type="url" id="l" placeholder="https://drive.google.com/..."></label>'+
  '<button class="btn p" id="send">জমা দিন</button><div class="muted" id="msg"></div></div></div>'+
@@ -226,6 +228,8 @@ async function send(){
  if(!soc.every(okLink)){note("সোশ্যাল লিংক https:// দিয়ে শুরু হতে হবে");return}
  var vd=$("vd").value.trim();
  if(vd&&!/^https?:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//i.test(vd)){note("ভিডিও লিংক YouTube-এর হতে হবে");return}
+ var vtn=+$("vtn").value,vtu=$("vtu").value.trim();
+ if(vtn>0&&!/^https:\/\/[^\s\/]+\.[^\s]+$/i.test(vtu)){note("ভিজিটের ওয়েবসাইটের লিংক দিন (https:// দিয়ে শুরু)");return}
  var big=[mf].concat(pf).some(function(f){return f.size>MAXMB*1048576});
  if(big){note("প্রতিটি ছবি "+MAXMB+" MB-এর কম হতে হবে");return}
  var b=$("send");b.disabled=true;
@@ -241,7 +245,7 @@ async function send(){
   var fj=null;
   if(fl)fj=await run(fl,"/file","মডের ফাইল আপলোড হচ্ছে ("+(fl.size/1048576).toFixed(1)+" MB)...","Telegram-এ ফাইল সংরক্ষণ হচ্ছে, একটু অপেক্ষা করুন...");
   ui.set(.97,"তথ্য সংরক্ষণ হচ্ছে...");ui.spin("তথ্য সংরক্ষণ হচ্ছে...");
-  var r=await db.from("mods").insert({game_id:+$("g").value,category_id:cat,title:t,description:$("d").value.trim()||null,cover_url:cover,previews:pv,game_version:$("v").value.trim()||null,install_steps:$("i").value.trim()||null,credit_name:$("n").value.trim()||null,social_facebook:soc[0]||null,social_youtube:soc[1]||null,social_telegram:soc[2]||null,video_url:vd||null,dl_kind:fl?"tg":"drive",file_size:fl?fl.size:null,uploader_id:ME.id,status:"pending"}).select("id").single();
+  var r=await db.from("mods").insert({game_id:+$("g").value,category_id:cat,title:t,description:$("d").value.trim()||null,cover_url:cover,previews:pv,game_version:$("v").value.trim()||null,install_steps:$("i").value.trim()||null,credit_name:$("n").value.trim()||null,social_facebook:soc[0]||null,social_youtube:soc[1]||null,social_telegram:soc[2]||null,video_url:vd||null,visit_times:vtn,visit_secs:+$("vts").value,visit_url:vtn>0?vtu:null,dl_kind:fl?"tg":"drive",file_size:fl?fl.size:null,uploader_id:ME.id,status:"pending"}).select("id").single();
   if(r.error)throw r.error;
   var r2=await db.from("mod_secrets").insert(fl?{mod_id:r.data.id,tg_bot_id:fj.bot_id,tg_file_id:fj.file_id,file_name:fj.name}:{mod_id:r.data.id,drive_link:dl});
   if(r2.error){await db.from("mods").delete().eq("id",r.data.id);throw r2.error}
