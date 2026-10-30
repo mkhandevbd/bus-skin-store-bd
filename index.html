@@ -245,7 +245,8 @@ function card(m){
  th=m.cover_url?'<img loading="lazy" decoding="async" src="'+esc(m.cover_url)+'" alt="'+esc(m.title)+'">':'<svg><use href="#bus"/></svg>';
  return '<article class="card"><a class="th" href="mod.html?id='+m.id+'">'+(isNew(m)?'<span class="tag">নতুন</span>':'')+th+'</a><div class="body"><div class="cat">'+esc(c?c.name:"")+'</div><a class="t" href="mod.html?id='+m.id+'">'+esc(m.title)+'</a><div class="meta"><a class="un" href="profile.html?u='+esc(u.id||"")+'">'+(/^https?:\/\//i.test(u.avatar_url||"")?'<img class="av" src="'+esc(u.avatar_url)+'" alt="" referrerpolicy="no-referrer">':"")+esc(u.display_name||"অজানা")+'</a> '+b+minisoc(u)+'</div><div class="dl"><span class="rt">★ '+(m.rating_count?avg(m).toFixed(1):"—")+'</span><span>⬇ '+fmt(m.downloads)+'</span><span>💬 '+fmt(m.comment_count)+'</span><span>👁 '+fmt(m.views)+'</span></div><div class="acts"><a class="btn p" href="mod.html?id='+m.id+'">ডাউনলোড</a></div></div></article>';
 }
-function row(title,L,mid){var hs=S.t=="all"||S.t=="top";return '<section><h2><span>'+title+'</span>'+(mid&&hs?'<button class="more" data-t="'+mid+'">সব দেখুন ›</button>':'')+'</h2><div class="grid'+(hs?' hs':'')+'">'+L.map(card).join("")+'</div></section>'}
+function feedHTML(L,every){var h="";L.forEach(function(m,i){h+=card(m);if((i+1)%every==0&&i<L.length-1)h+='<div class="card adcard"><div class="adslot" data-ad="feed"></div></div>'});return h}
+function row(title,L,mid){var hs=S.t=="all"||S.t=="top";return '<section><h2><span>'+title+'</span>'+(mid&&hs?'<button class="more" data-t="'+mid+'">সব দেখুন ›</button>':'')+'</h2><div class="grid'+(hs?' hs':'')+'">'+feedHTML(L,hs?4:8)+'</div></section>'}
 function avg(m){return m.rating_count?m.rating_sum/m.rating_count:0}
 function srt(a,b){
  var k=S.sort;
@@ -281,6 +282,7 @@ function draw(){
  $("o1").innerHTML=h;h="";
  if(S.t!="top")S.cats.forEach(function(c){if(S.t=="all"||S.t==c.id)h+=sec(c)});
  $("o2").innerHTML=h||((S.t=="top"&&$("o1").innerHTML)?"":'<div class="empty">'+((S.q||S.minr||S.vid)?"কিছু পাওয়া যায়নি। অন্য শব্দে খুঁজুন।":"এখনো কোনো মড যোগ হয়নি, শীঘ্রই আসছে।")+'</div>');
+ if(window.ADS)ADS.fill(document);
 }
 async function showMe(sess){
  var l=$("login"),m=$("me");

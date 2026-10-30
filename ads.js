@@ -10,16 +10,18 @@ var ADS = (function () {
       rel: { d: ["100%", 300], m: ["100%", 300] },
       bottom: { d: ["100%", 300], m: ["100%", 300] },
       gate1: { d: [300, 250], m: [300, 250] },
+      feed: { d: ["100%", 250], m: ["100%", 250] },
+      sticky: { d: [320, 50], m: [320, 50] },
       gateVideo: { d: [480, 270], m: [320, 180] }
     },
     C = {
-      preview: true, popunder: "", socialbar: "", top_d: "", top_m: "", mid: "", side: "", rel: "", bottom: "", gate1: "",
+      preview: true, popunder: "", socialbar: "", top_d: "", top_m: "", mid: "", side: "", rel: "", bottom: "", gate1: "", feed: "", sticky: "",
       gate2_mode: "video", gate2_code: "", visit_title: "", visit_text: "", visit_url: "", visit_btn: "ওয়েবসাইট দেখুন"
     },
     on = false, started = false, ready = false;
 
   var st = document.createElement("style");
-  st.textContent = ".visitcard{text-align:center;max-width:480px;width:100%;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--card)}.visitcard b{display:block;font-size:18px}.visitcard p{margin:6px 0 10px;color:var(--muted)}.visitcard small{display:block;margin-top:8px;color:var(--muted)}.visitcard .btn{display:inline-block}";
+  st.textContent = ".stk{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));z-index:35;display:flex;justify-content:center;pointer-events:none}.stk>.adslot{margin:0;pointer-events:auto;background:var(--card);border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.25)}.stkx{position:absolute;right:6px;top:-14px;pointer-events:auto;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:12px;cursor:pointer;z-index:2;padding:0}body.has-sticky{padding-bottom:calc(126px + env(safe-area-inset-bottom))!important}@media(min-width:701px){.stk{display:none}}.adcard{display:grid!important;align-content:center;min-height:200px;padding:8px}.adcard>.adslot{margin:0;width:100%}.visitcard{text-align:center;max-width:480px;width:100%;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--card)}.visitcard b{display:block;font-size:18px}.visitcard p{margin:6px 0 10px;color:var(--muted)}.visitcard small{display:block;margin-top:8px;color:var(--muted)}.visitcard .btn{display:inline-block}";
   document.head.appendChild(st);
 
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -50,17 +52,22 @@ var ADS = (function () {
       '<a class="btn p" href="' + esc(C.visit_url) + '" target="_blank" rel="noopener noreferrer sponsored">' + esc(C.visit_btn || "ওয়েবসাইট দেখুন") + '</a>' +
       '<small>ঐচ্ছিক: না দেখলেও ডাউনলোড করা যাবে।</small></div>';
   }
+  function hide(el) {
+    el.hidden = true;
+    var p = el.parentNode;
+    if (p && p.classList && p.classList.contains("adcard")) p.hidden = true;
+  }
   function one(el) {
     if (el.dataset.done) return;
     el.dataset.done = 1;
     var n = el.dataset.ad, sz = SZ[n];
-    if (!sz || !on) { el.hidden = true; return; }
+    if (!sz || !on) { hide(el); return; }
     var m = mobile(), s = m ? sz.m : sz.d, w = typeof s[0] == "number" ? s[0] + "px" : s[0], h = s[1];
     if (n == "gateVideo" && C.gate2_mode == "visit" && safe(C.visit_url)) { el.innerHTML = visit(); return; }
     var code = C[n == "top" ? (m ? "top_m" : "top_d") : n == "gateVideo" ? "gate2_code" : n];
     if (!code) {
       if (C.preview) el.innerHTML = '<div class="adph" style="width:' + w + ';max-width:100%;height:' + h + 'px">' + (n == "gateVideo" ? "ভিডিও বিজ্ঞাপনের জায়গা" : "বিজ্ঞাপনের জায়গা") + '</div>';
-      else el.hidden = true;
+      else hide(el);
       return;
     }
     var f = document.createElement("iframe");
@@ -83,9 +90,25 @@ var ADS = (function () {
         if (on) {
           if (C.popunder) runHTML(document.body, C.popunder);
           if (C.socialbar) runHTML(document.body, C.socialbar);
+          self.sticky();
         }
         self.fill(document);
       });
+    },
+    sticky: function () {
+      if (!matchMedia("(max-width:700px)").matches) return;
+      try { if (sessionStorage.getItem("bs_stk") == "1") return; } catch (e) {}
+      if (!C.sticky && !C.preview) return;
+      var d = document.createElement("div");
+      d.className = "stk";
+      d.innerHTML = '<button type="button" class="stkx" aria-label="বন্ধ করুন">✕</button><div class="adslot" data-ad="sticky"></div>';
+      document.body.appendChild(d);
+      document.body.classList.add("has-sticky");
+      d.querySelector(".stkx").onclick = function () {
+        d.remove(); document.body.classList.remove("has-sticky");
+        try { sessionStorage.setItem("bs_stk", "1"); } catch (e) {}
+      };
+      this.fill(d);
     },
     fill: function (root) {
       if (!ready) return;

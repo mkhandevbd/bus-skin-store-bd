@@ -395,7 +395,7 @@ document.addEventListener("click",async function(e){
 });
 
 /* বিজ্ঞাপন সেটিং (শুধু Owner) */
-var ADF=[["popunder","Popunder কোড","সব পেজে নিজে বসবে, আলাদা কিছু করতে হবে না"],["socialbar","Social Bar কোড","সব পেজে নিজে বসবে"],["top_d","ওপরের ব্যানার, কম্পিউটার (728x90)",""],["top_m","ওপরের ব্যানার, মোবাইল (320x50)",""],["mid","হোমপেজের মাঝের ব্যানার (300x250)",""],["side","মড পেজের ডান পাশের ব্যানার (300x250)",""],["rel","মড পেজের নিচের Native Banner",""],["bottom","হোমপেজের নিচের Native Banner",""],["gate1","ডাউনলোড ধাপ ১: ব্যানার (300x250)",""]];
+var ADF=[["popunder","Popunder কোড","সব পেজে নিজে বসবে, আলাদা কিছু করতে হবে না"],["socialbar","Social Bar কোড","সব পেজে নিজে বসবে"],["top_d","ওপরের ব্যানার, কম্পিউটার (728x90)",""],["top_m","ওপরের ব্যানার, মোবাইল (320x50)",""],["mid","হোমপেজের মাঝের ব্যানার (300x250)",""],["side","মড পেজের ডান পাশের ব্যানার (300x250)",""],["rel","মড পেজের নিচের Native Banner",""],["bottom","হোমপেজের নিচের Native Banner",""],["gate1","ডাউনলোড ধাপ ১: ব্যানার (300x250)",""],["feed","মডের কার্ডের মাঝের বিজ্ঞাপন (Native Banner, হোমপেজ ও আরও মড-এ)",""],["sticky","মোবাইলের নিচের স্টিকি ব্যানার (320x50)",""]];
 async function pAd(){
  var r=await db.from("ad_settings").select("config").eq("id",1).maybeSingle();
  if(r.error){err(r.error);return}

@@ -315,7 +315,8 @@ function go(){
 async function related(){
  var r=await db.from("mods").select("id,title,cover_url,downloads").eq("category_id",M.category_id).eq("status","approved").neq("id",M.id).order("downloads",{ascending:false}).limit(6);
  if(r.error||!r.data.length)return;
- $("rel").innerHTML='<h2>আরও মড</h2><div class="grid">'+r.data.map(function(m){return '<a class="rc" href="mod.html?id='+m.id+'"><div class="rt">'+(safe(m.cover_url)?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="">':'<svg style="width:60%;--b:var(--g);--s:var(--y)"><use href="#bus"/></svg>')+'</div><div class="rb">'+esc(m.title)+'<small>⬇ '+fmt(m.downloads)+'</small></div></a>'}).join("")+'</div>';
+ $("rel").innerHTML='<h2>আরও মড</h2><div class="grid">'+r.data.map(function(m,i){return '<a class="rc" href="mod.html?id='+m.id+'"><div class="rt">'+(safe(m.cover_url)?'<img loading="lazy" src="'+esc(m.cover_url)+'" alt="">':'<svg style="width:60%;--b:var(--g);--s:var(--y)"><use href="#bus"/></svg>')+'</div><div class="rb">'+esc(m.title)+'<small>⬇ '+fmt(m.downloads)+'</small></div></a>'+(i==2&&r.data.length>3?'<div class="rc adcard"><div class="adslot" data-ad="feed"></div></div>':"")}).join("")+'</div>';
+ if(window.ADS)ADS.fill($("rel"));
 }
 
 /* রেটিং ও কমেন্ট */
