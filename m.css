@@ -1,9 +1,17 @@
 /* মোবাইল ফ্রেন্ডলি স্টাইল ও স্লাইডার (সব পেজে কাজ করে)। এখানে কিছু বদলাতে হবে না। */
-html,body{overflow-x:hidden}
+html{overflow-x:hidden;-webkit-text-size-adjust:100%}
+body{overflow-x:clip}
 img,video,iframe{max-width:100%}
+*{-webkit-tap-highlight-color:transparent}
+a,button,select,summary{touch-action:manipulation}
+.hero>*,.layout>*,.pf>*,.two>*,.row>*{min-width:0}
+.strip{max-width:100%}
+.tab{white-space:nowrap}
 
 /* ---------- স্লাইডার (গেম ও ক্যাটাগরির ট্যাব) ---------- */
-.sl{position:relative;display:flex;align-items:center;gap:6px;min-width:0}
+.sl{position:relative;display:flex;align-items:center;min-width:0}
+.sla[data-d="-1"]{left:-4px}
+.sla[data-d="1"]{right:-4px}
 .sl>.scrollx{flex:1;min-width:0;flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;cursor:grab}
 .sl>.scrollx::-webkit-scrollbar{display:none}
 .sl>.scrollx>*{flex:0 0 auto;scroll-snap-align:center}
@@ -11,7 +19,7 @@ img,video,iframe{max-width:100%}
 .sl.r>.scrollx{-webkit-mask-image:linear-gradient(90deg,#000 90%,transparent);mask-image:linear-gradient(90deg,#000 90%,transparent)}
 .sl.l>.scrollx{-webkit-mask-image:linear-gradient(270deg,#000 90%,transparent);mask-image:linear-gradient(270deg,#000 90%,transparent)}
 .sl.l.r>.scrollx{-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
-.sla{position:relative;overflow:hidden;flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .2s,transform .15s,box-shadow .2s}
+.sla{position:absolute;top:calc(50% - 17px);z-index:3;overflow:hidden;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .2s,transform .15s,box-shadow .2s}
 .sl.l>.sla[data-d="-1"],.sl.r>.sla[data-d="1"]{opacity:1;pointer-events:auto}
 .sla:hover{transform:scale(1.12);box-shadow:0 0 0 3px color-mix(in srgb,var(--y) 40%,transparent)}
 .sla::after{content:"";position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent)}
@@ -41,14 +49,20 @@ section>h2{display:flex;justify-content:space-between;align-items:center;gap:8px
 @media (max-width:640px){
   .wrap,.bar{padding-left:12px;padding-right:12px}
   .bar{gap:6px;flex-wrap:wrap}
-  .logo{font-size:18px}
+  .logo{font-size:17px;white-space:nowrap}
+  header #lang,header #theme,header #pwaBtn{display:none!important}
   .btn{padding:6px 10px;font-size:14px;min-height:38px}
   .me .n{display:none}
   input,select,textarea{font-size:16px!important}
 
-  /* হোমপেজ */
-  .hero{gap:6px;padding-top:14px}
-  .stage{padding:0 4px}
+  /* হোমপেজ: অ্যাপের মতো (ট্যাব ওপরে আটকে থাকে, হেডার সরে যায়) */
+  .home header{position:static}
+  .home #slt{position:sticky;top:0;z-index:20;background:var(--bg);margin:0 -12px;padding:4px 12px 0;box-shadow:0 1px 0 var(--line)}
+  .hero{gap:4px;padding-top:10px}
+  h1.fire{font-size:34px}
+  .tagline{font-size:17px}
+  .hero .sub{font-size:14px}
+  .stage{padding:0 4px;max-width:320px;margin:0 auto}
   .scr{transform:rotateY(-5deg) rotateX(2deg)}
   .strip{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:-12px;padding-bottom:4px;gap:8px}
   .strip::-webkit-scrollbar{display:none}
@@ -70,6 +84,9 @@ section>h2{display:flex;justify-content:space-between;align-items:center;gap:8px
   .lbn{width:40px;height:40px}
 
   /* অ্যাডমিন */
+  .adm .bar{flex-wrap:nowrap}
+  .adm .logo{font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .adm header #theme{display:none!important}
   .tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
   .tabs::-webkit-scrollbar{display:none}
   .row{gap:8px}

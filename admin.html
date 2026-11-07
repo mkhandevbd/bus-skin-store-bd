@@ -75,12 +75,12 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 .upbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g),var(--y));transition:width .25s}
 @media (prefers-reduced-motion:reduce){.ring.spin svg{animation:none}.upcard{animation:none}}
 .stp{max-height:90px;max-width:100%;border-radius:8px;border:1px solid var(--line)}
-.chart{display:flex;align-items:flex-end;gap:4px;height:150px;padding-top:18px}
-.bar{position:relative;flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
-.bar i{display:block;width:100%;background:linear-gradient(var(--y),var(--g));border-radius:5px 5px 0 0;min-height:2px;transition:filter .15s}
-.bar:hover i{filter:brightness(1.2)}
-.bar em{font-style:normal;font-size:10px;color:var(--muted);margin-bottom:2px}
-.bar span{font-size:10px;color:var(--muted);margin-top:3px}
+.chart{display:flex;align-items:flex-end;gap:4px;height:150px;padding-top:18px;overflow:hidden}
+.cbar{position:relative;flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.cbar i{display:block;width:100%;background:linear-gradient(var(--y),var(--g));border-radius:5px 5px 0 0;min-height:2px;transition:filter .15s}
+.cbar:hover i{filter:brightness(1.2)}
+.cbar em{font-style:normal;font-size:10px;color:var(--muted);margin-bottom:2px}
+.cbar span{font-size:10px;color:var(--muted);margin-top:3px}
 .two2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
 .vtbox{border:1px dashed var(--g);border-radius:12px;padding:12px;display:grid;gap:10px}
 </style>
@@ -94,7 +94,7 @@ input[type=text],input[type=url],select,textarea{border:1px solid var(--line);ba
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#0a7d5a">
 </head>
-<body>
+<body class="adm">
 <header><div class="wrap bar">
   <div class="logo">Bus Skin Store BD · অ্যাডমিন</div>
   <a class="btn" href="index.html">সাইট</a>
@@ -223,7 +223,7 @@ async function pOv(){
  var max=Math.max.apply(null,D.map(function(d){return d.visitors||0}).concat([1])),w7=D.filter(function(d){return d.day>=bd(6)});
  var v7=w7.reduce(function(a,d){return a+(d.visitors||0)},0),mo=w7.reduce(function(a,d){return a+(d.mobile||0)},0),de=w7.reduce(function(a,d){return a+(d.desktop||0)},0),mp=(mo+de)?Math.round(mo/(mo+de)*100):0;
  var st=function(n,l){return '<div class="stat"><b>'+n+'</b><span>'+l+'</span></div>'};
- var chart=D.length?D.map(function(d){return '<div class="bar" title="'+esc(d.day)+': '+(d.visitors||0)+' ভিজিটর, '+(d.pageviews||0)+' পেজভিউ"><em>'+(d.visitors||0)+'</em><i style="height:'+Math.max(2,(d.visitors||0)/max*100)+'%"></i><span>'+esc(String(d.day).slice(8))+'</span></div>'}).join(""):"";
+ var chart=D.length?D.map(function(d){return '<div class="cbar" title="'+esc(d.day)+': '+(d.visitors||0)+' ভিজিটর, '+(d.pageviews||0)+' পেজভিউ"><em>'+(d.visitors||0)+'</em><i style="height:'+Math.max(2,(d.visitors||0)/max*100)+'%"></i><span>'+esc(String(d.day).slice(8))+'</span></div>'}).join(""):"";
  var rows=D.slice().reverse().map(function(d){return '<div class="row"><div class="grow">'+esc(d.day)+(d.day==today?" (আজ)":"")+'</div><div>👥 '+(d.visitors||0)+'</div><div>📄 '+(d.pageviews||0)+'</div><div>⬇ '+(d.downloads||0)+'</div><div>🆕 '+(d.new_users||0)+'</div><div>⬆ '+(d.uploads||0)+'</div></div>'}).join("");
  $("panel").innerHTML=
  '<div class="stats">'+st(g("visitors"),"আজ ভিজিটর")+st(g("pageviews"),"আজ পেজভিউ")+st(g("downloads"),"আজ ডাউনলোড")+st(g("new_users"),"আজ নতুন ইউজার")+st(g("uploads"),"আজ আপলোড")+'</div>'+
